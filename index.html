@@ -3,396 +3,388 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoMATHic 2027 Score Sheet App</title>
+    <title>UPCES - Scorer Terminal Portal</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg-canvas: #f3f4f6;
+            --card-surface: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --xm-vivid-blue: #0076bc;
+            --xm-light-purple: #704ba0;
+            --obsidian: #0d1117;
+            --border-light: #e2e8f0;
+            --gradient-xm: linear-gradient(135deg, var(--xm-vivid-blue), var(--xm-light-purple));
+            
+            /* Specific Requested Active Colors */
+            --forest-green: #1e4620;
+            --deep-dark-red: #7f1d1d;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: var(--bg-canvas); color: var(--text-dark); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-x: hidden; }
+
+        /* --- ENTRANCE ANIMATION LAYER --- */
+        #entrance-screen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #ffffff;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10000;
+        }
+        .netflix-title-clone {
+            background: var(--gradient-xm);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 64px; font-weight: 800; letter-spacing: 2px;
+            text-transform: uppercase; transform: scale(0.5); opacity: 0;
+            animation: netflixCinematic 3.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        .footer-brand-tag { position: absolute; bottom: 35px; font-size: 11px; color: var(--obsidian); font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; opacity: 0.8; }
         
-        @keyframes pulseGlow {
-            0% { text-shadow: 0 0 10px rgba(0, 255, 100, 0.4), 0 0 20px rgba(0, 255, 100, 0.2); }
-            50% { text-shadow: 0 0 20px rgba(0, 255, 100, 0.8), 0 0 30px rgba(0, 255, 100, 0.4); }
-            100% { text-shadow: 0 0 10px rgba(0, 255, 100, 0.4), 0 0 20px rgba(0, 255, 100, 0.2); }
+        @keyframes netflixCinematic {
+            0% { transform: scale(0.6); opacity: 0; filter: blur(6px); }
+            35% { transform: scale(1.02); opacity: 1; filter: blur(0px); }
+            65% { transform: scale(1.05); opacity: 1; filter: blur(0px); }
+            100% { transform: scale(1.35); opacity: 0; filter: blur(12px); }
         }
 
-        @keyframes scanline {
-            0% { background-position: 0 0; }
-            100% { background-position: 0 100%; }
+        /* --- GATEWAY FRAME (Screenshot_2026-06-22-22-08-21-238_com.android.chrome-edit_2.jpg Replica) --- */
+        #gateway-screen { display: none; width: 100%; max-width: 490px; text-align: center; }
+        .qualtrics-card-clone {
+            background: var(--card-surface); padding: 50px 45px; border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); border: 1px solid rgba(0,0,0,0.06); text-align: left; margin-bottom: 35px;
         }
-
-        body {
-            font-family: "Times New Roman", Times, serif;
-            background-color: #0b0f12;
-            color: #00ff64;
-            padding: 30px 15px;
-            display: flex;
-            justify-content: center;
-            background-image: linear-gradient(rgba(0, 255, 100, 0.03) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(0, 255, 100, 0.03) 1px, transparent 1px);
-            background-size: 20px 20px;
+        .brand-logo-container { margin-bottom: 40px; display: flex; align-items: baseline; justify-content: flex-start; }
+        .brand-logo-main { font-size: 46px; font-weight: 800; color: #000000; letter-spacing: -1.5px; text-transform: lowercase; }
+        .brand-logo-sub { 
+            font-size: 22px; font-weight: 800; 
+            background: var(--gradient-xm);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-left: 2px; text-transform: uppercase;
         }
+        .input-wrapper { position: relative; margin-bottom: 20px; }
+        .input-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 18px; opacity: 0.35; }
+        .qualtrics-input {
+            width: 100%; padding: 15px 15px 15px 48px; border: 1px solid #bcbcbc; border-radius: 4px;
+            font-size: 16px; color: #000000; outline: none; transition: all 0.2s ease-in-out; background: #ffffff;
+        }
+        .qualtrics-input:focus { 
+            border-color: var(--xm-vivid-blue); 
+            box-shadow: 0 0 10px rgba(0, 118, 188, 0.45), 0 0 0 2px rgba(112, 75, 160, 0.2); 
+        }
+        .qualtrics-btn-blue {
+            width: 100%; padding: 15px; background-color: var(--xm-vivid-blue); color: #ffffff; border: none;
+            font-size: 16px; font-weight: 600; border-radius: 4px; cursor: pointer; margin-top: 10px; transition: background 0.15s;
+        }
+        .qualtrics-btn-blue:hover { background-color: #005f96; }
+        .security-notice-text { font-size: 14px; color: var(--text-muted); text-align: center; line-height: 1.6; margin-top: 25px; padding: 0 10px; }
 
-        .console-container {
-            width: 100%;
-            max-width: 680px;
-            background: #11161b;
-            border: 2px solid #00ff64;
-            border-radius: 4px;
-            padding: 30px;
-            box-shadow: 0 0 25px rgba(0, 255, 100, 0.15);
+        /* --- HIGH-FIDELITY DYNAMIC MAIN INTERFACE --- */
+        #main-scoring-panel { 
+            display: none; width: 100%; max-width: 800px; background: var(--card-surface); 
+            border-radius: 24px; padding: 50px; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 40px rgba(0, 118, 188, 0.05); 
+            border: 1px solid rgba(255, 255, 255, 0.8); 
             position: relative;
-            overflow: hidden;
-        }
-
-        .console-container::after {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 10;
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
-        }
-
-        /* Cosmic Display Showcase */
-        .celestial-showcase {
-            width: 100%;
-            height: 160px;
-            background-color: #050709;
-            background-image: url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=800&q=80');
-            background-size: cover;
-            background-position: center;
-            border: 1px solid #00ff64;
-            margin-bottom: 25px;
-            border-radius: 2px;
-            position: relative;
-        }
-
-        .celestial-showcase::before {
-            content: "SYSTEM LIVE ORIENTATION SCAN";
-            position: absolute;
-            bottom: 8px;
-            left: 8px;
-            background: #11161b;
-            padding: 2px 6px;
-            font-size: 11px;
-            font-weight: bold;
-            border: 1px solid #00ff64;
-        }
-
-        h2 {
-            color: #00ff64;
-            animation: pulseGlow 3s infinite ease-in-out;
-            text-align: center;
-            margin-bottom: 25px;
-            font-size: 26px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            border-bottom: 1px solid #00ff64;
-            padding-bottom: 15px;
         }
         
-        .profile-box {
-            background: #161f24;
-            border: 1px solid #00ff64;
-            padding: 20px;
-            margin-bottom: 30px;
+        .welcome-banner {
+            background: var(--gradient-xm); padding: 30px; border-radius: 16px; color: #ffffff;
+            margin-bottom: 35px; box-shadow: 0 10px 20px rgba(0, 118, 188, 0.2);
         }
-        .profile-box h3 { color: #00ff64; font-size: 14px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;}
-        
-        .input-row {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
-        
-        input[type="text"] {
-            flex: 1;
-            padding: 12px;
-            background: #0b0f12;
-            border: 1px solid #00ff64;
-            color: #00ff64;
-            font-family: "Times New Roman", Times, serif;
-            font-size: 16px;
-            outline: none;
-        }
-        input[type="text"]:focus { box-shadow: 0 0 10px rgba(0, 255, 100, 0.4); }
-        input::placeholder { color: rgba(0, 255, 100, 0.4); }
+        .welcome-banner h2 { font-size: 26px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.5px; }
+        .welcome-banner p { font-size: 14px; opacity: 0.9; font-weight: 500; }
 
-        .tier-section {
-            margin-bottom: 35px;
-            border: 1px solid #00ff64;
-            background: #0d1216;
-            padding: 20px 15px 10px 15px;
+        .session-badge-row { 
+            display: flex; gap: 16px; margin-bottom: 40px; 
         }
-        .tier-header {
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-bottom: 1px dashed rgba(0, 255, 100, 0.4);
-            padding-bottom: 5px;
+        .meta-pill {
+            flex: 1; background: #f8fafc; border: 1px solid var(--border-light); 
+            padding: 16px; border-radius: 12px; font-size: 14px; color: var(--text-muted);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
+        .meta-pill strong { display: block; color: var(--obsidian); font-size: 18px; margin-top: 4px; font-weight: 700; }
+        .meta-pill span { color: var(--xm-vivid-blue); }
 
-        .item-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(0, 255, 100, 0.02);
-            padding: 8px 12px;
-            margin-bottom: 10px;
-            border: 1px solid rgba(0, 255, 100, 0.1);
+        .tier-group-container { margin-bottom: 40px; }
+        .tier-group-title { 
+            font-size: 14px; font-weight: 800; text-transform: uppercase; 
+            margin-bottom: 18px; letter-spacing: 1px; color: var(--text-muted);
+            display: flex; align-items: center; gap: 8px;
         }
-        .item-label { font-weight: bold; font-size: 15px; color: #00ff64; }
+        .tier-group-title::after { content: ''; flex: 1; height: 1px; background: var(--border-light); }
         
-        .btn-group {
-            display: flex;
-            gap: 8px;
+        .scoring-item-card { 
+            display: flex; align-items: center; justify-content: space-between; 
+            background: #ffffff; padding: 18px 24px; border-radius: 14px; 
+            margin-bottom: 14px; border: 1px solid var(--border-light);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        .state-btn {
-            background: #0b0f12;
-            border: 1px solid rgba(0, 255, 100, 0.4);
-            color: rgba(0, 255, 100, 0.7);
-            padding: 6px 14px;
-            font-family: "Times New Roman", Times, serif;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
+        .scoring-item-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            border-color: #cbd5e1;
         }
-        .state-btn:hover { background: rgba(0, 255, 100, 0.1); color: #00ff64; }
+        .item-identity { font-size: 16px; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 14px; }
         
-        .btn-correct.active { background: #00ff64 !important; color: #000000 !important; font-weight: bold; box-shadow: 0 0 10px rgba(0, 255, 100, 0.4); border-color: #00ff64; }
-        .btn-wrong.active { background: #ff3333 !important; color: #ffffff !important; font-weight: bold; box-shadow: 0 0 10px rgba(255, 51, 51, 0.4); border-color: #ff3333; }
-        .btn-none.active { background: #33a6ff !important; color: #ffffff !important; font-weight: bold; box-shadow: 0 0 10px rgba(51, 166, 255, 0.4); border-color: #33a6ff; }
-
-        .pdf-btn {
-            width: 100%;
-            background: #00ff64;
-            color: #000000;
-            border: 2px solid #00ff64;
-            padding: 15px;
-            font-family: "Times New Roman", Times, serif;
-            font-weight: 700;
-            font-size: 16px;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.2s;
+        .indicator-dot-blue { 
+            width: 10px; height: 10px; background-color: var(--xm-vivid-blue); 
+            border-radius: 50%; display: inline-block;
+            box-shadow: 0 0 0 4px rgba(0, 118, 188, 0.2);
         }
-        .pdf-btn:hover { background: transparent; color: #00ff64; box-shadow: 0 0 15px rgba(0, 255, 100, 0.4); }
-        .sync-status { text-align: center; font-size: 12px; color: #00ff64; margin-top: 12px; opacity: 0.8; font-style: italic; }
+        .selector-button-row { display: flex; background: #f1f5f9; padding: 4px; border-radius: 10px; gap: 4px; }
+        
+        .toggle-choice-btn { 
+            background: transparent; border: none; color: var(--text-muted); 
+            padding: 10px 22px; font-size: 13px; font-weight: 700; border-radius: 8px; 
+            cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        .toggle-choice-btn:hover { color: var(--text-dark); background: rgba(255,255,255,0.6); }
+        
+        /* Specific Target Active State Overrides */
+        .toggle-choice-btn.active-correct { 
+            background: var(--forest-green) !important; 
+            color: #ffffff !important; 
+            box-shadow: 0 4px 12px rgba(30, 70, 32, 0.35);
+        }
+        .toggle-choice-btn.active-wrong { 
+            background: var(--deep-dark-red) !important; 
+            color: #ffffff !important; 
+            box-shadow: 0 4px 12px rgba(127, 29, 29, 0.35);
+        }
+        .toggle-choice-btn.active-unanswered { 
+            background: var(--obsidian) !important; 
+            color: #ffffff !important; 
+            box-shadow: 0 4px 12px rgba(13, 17, 23, 0.35);
+        }
+        
+        .master-submit-btn { 
+            width: 100%; padding: 18px; font-size: 16px; 
+            background-image: var(--gradient-xm); color: white; border: none; 
+            font-weight: 700; border-radius: 14px; cursor: pointer; 
+            text-transform: uppercase; letter-spacing: 0.5px; margin-top: 20px; 
+            box-shadow: 0 8px 20px rgba(112, 75, 160, 0.25);
+            transition: opacity 0.2s ease, transform 0.1s ease;
+        }
+        .master-submit-btn:hover { opacity: 0.95; transform: translateY(-1px); }
     </style>
 </head>
 <body>
 
-    <div class="console-container">
-        <h2>Welcome to AutoMATHic 2027 Score Sheet App</h2>
-        
-        <div class="celestial-showcase"></div>
-        
-        <div class="profile-box">
-            <h3>Identity Core Verification</h3>
-            <div class="input-row">
-                <input type="text" id="teamNameInput" placeholder="Target Team Name Entry..." onchange="updateTeamIdentity()">
-                <input type="text" id="scorerNameInput" placeholder="Examiner Signature Code..." onchange="pushStateToCloud()">
+    <!-- 1. Intro Transition Layer -->
+    <div id="entrance-screen">
+        <div class="netflix-title-clone">UPCES</div>
+        <div class="footer-brand-tag">powered by APPerin</div>
+    </div>
+
+    <!-- 2. Entrance Block -->
+    <div id="gateway-screen">
+        <div class="qualtrics-card-clone">
+            <div class="brand-logo-container">
+                <span class="brand-logo-main">scorer</span><span class="brand-logo-sub">app</span>
             </div>
+            
+            <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                <input type="text" id="teamField" class="qualtrics-input" placeholder="Team Name">
+            </div>
+            
+            <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                <input type="text" id="scorerField" class="qualtrics-input" placeholder="Name of Scorer">
+            </div>
+            
+            <button class="qualtrics-btn-blue" onclick="processPortalValidation()">Proceed</button>
+        </div>
+        
+        <div class="security-notice-text">
+            If you are not scorer do not try to access this app. Thank you.
+        </div>
+    </div>
+
+    <!-- 3. Main Scoring Dashboard Studio Workspace -->
+    <div id="main-scoring-panel">
+        <div class="welcome-banner">
+            <h2>Welcome to the Scorer App Interface</h2>
+            <p>UPCES Evaluation Terminal Engine • Realtime Cloud Sync Active</p>
         </div>
 
-        <div class="tier-section">
-            <div class="tier-header">🟢 Easy Tier Matrix Breakdown (+2 / -2 / 0)</div>
-            <div id="easyContainer"></div>
+        <div class="session-badge-row">
+            <div class="meta-pill">Target Evaluation Unit <strong id="viewTeam">N/A</strong></div>
+            <div class="meta-pill">Active Registry Marshal <strong id="viewScorer">N/A</strong></div>
         </div>
 
-        <div class="tier-section">
-            <div class="tier-header">🟡 Average Tier Matrix Breakdown (+10 / -5 / -2)</div>
-            <div id="averageContainer"></div>
+        <div class="tier-group-container">
+            <div class="tier-group-title">Easy Division</div>
+            <div id="boxEasy"></div>
+        </div>
+        <div class="tier-group-container">
+            <div class="tier-group-title">Average Division</div>
+            <div id="boxAverage"></div>
+        </div>
+        <div class="tier-group-container">
+            <div class="tier-group-title">Difficult Division</div>
+            <div id="boxDifficult"></div>
         </div>
 
-        <div class="tier-section">
-            <div class="tier-header">🔴 Difficult Tier Matrix Breakdown (+25 / -10 / -5)</div>
-            <div id="difficultContainer"></div>
-        </div>
-
-        <button class="pdf-btn" onclick="generateReportPDF()">Print Professional Grade Report</button>
-        <div class="sync-status">// Automated Node Uplink Matrix Operational and Synced.</div>
+        <button class="master-submit-btn" onclick="triggerPDFDownload()">Generate Document Summary Report</button>
     </div>
 
     <script>
-        const DATABASE_URL = "https://lomhji-default-rtdb.asia-southeast1.firebasedatabase.app";
-        let activeTeam = "";
+        const CLOUD_TARGET_URL = "https://lomhji-default-rtdb.asia-southeast1.firebasedatabase.app";
+        let activeScopeId = "";
+        let verifiedScorerName = "";
         
-        let currentRecord = {
+        let trackingStateMatrix = {
             easy: { item1: "unanswered", item2: "unanswered", item3: "unanswered", item4: "unanswered", item5: "unanswered" },
             average: { item1: "unanswered", item2: "unanswered", item3: "unanswered", item4: "unanswered", item5: "unanswered" },
             difficult: { item1: "unanswered", item2: "unanswered", item3: "unanswered", item4: "unanswered", item5: "unanswered" }
         };
 
-        const pointSchema = {
+        const scoreWeights = {
             easy: { correct: 2, wrong: -2, unanswered: 0 },
             average: { correct: 10, wrong: -5, unanswered: -2 },
             difficult: { correct: 25, wrong: -10, unanswered: -5 }
         };
 
-        function initMatrices() {
-            renderTier("easy", document.getElementById("easyContainer"));
-            renderTier("average", document.getElementById("averageContainer"));
-            renderTier("difficult", document.getElementById("difficultContainer"));
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                document.getElementById('entrance-screen').style.display = 'none';
+                document.getElementById('gateway-screen').style.display = 'block';
+            }, 3500);
+            assembleMatrixDOMs();
+        });
+
+        function assembleMatrixDOMs() {
+            populateSectorLayout("easy", document.getElementById("boxEasy"));
+            populateSectorLayout("average", document.getElementById("boxAverage"));
+            populateSectorLayout("difficult", document.getElementById("boxDifficult"));
         }
 
-        function renderTier(tierKey, elementContainer) {
-            let html = "";
+        function populateSectorLayout(tierId, targetWrapper) {
+            let DOMBuffer = "";
             for(let i = 1; i <= 5; i++) {
-                html += `
-                    <div class="item-row">
-                        <div class="item-label">Item 0${i}</div>
-                        <div class="btn-group">
-                            <button class="state-btn btn-correct" id="${tierKey}-i${i}-correct" onclick="selectState('${tierKey}', 'item${i}', 'correct')">Correct</button>
-                            <button class="state-btn btn-wrong" id="${tierKey}-i${i}-wrong" onclick="selectState('${tierKey}', 'item${i}', 'wrong')">Wrong</button>
-                            <button class="state-btn btn-none" id="${tierKey}-i${i}-unanswered" onclick="selectState('${tierKey}', 'item${i}', 'unanswered')">No Ans</button>
+                DOMBuffer += `
+                    <div class="scoring-item-card">
+                        <div class="item-identity"><span class="indicator-dot-blue"></span>Item 0${i}</div>
+                        <div class="selector-button-row">
+                            <button class="toggle-choice-btn" id="${tierId}-i${i}-correct" onclick="mutateItemStatus('${tierId}', 'item${i}', 'correct')">Correct</button>
+                            <button class="toggle-choice-btn" id="${tierId}-i${i}-wrong" onclick="mutateItemStatus('${tierId}', 'item${i}', 'wrong')">Wrong</button>
+                            <button class="toggle-choice-btn" id="${tierId}-i${i}-unanswered" onclick="mutateItemStatus('${tierId}', 'item${i}', 'unanswered')">No Ans</button>
                         </div>
                     </div>`;
             }
-            elementContainer.innerHTML = html;
+            targetWrapper.innerHTML = DOMBuffer;
         }
 
-        async function updateTeamIdentity() {
-            const rawName = document.getElementById("teamNameInput").value.trim();
-            if(!rawName) return;
-            activeTeam = rawName.replace(/[\.#\$\[\]]/g, "-");
-            
-            try {
-                const response = await fetch(`${DATABASE_URL}/competition_teams/${activeTeam}.json`);
-                const existingData = await response.json();
-                if(existingData) {
-                    if(existingData.matrix) currentRecord = existingData.matrix;
-                    if(existingData.scorerName) document.getElementById("scorerNameInput").value = existingData.scorerName;
-                    refreshButtonUIStates();
-                } else {
-                    currentRecord = {
-                        easy: { item1: "unanswered", item2: "unanswered", item3: "unanswered", item4: "unanswered", item5: "unanswered" },
-                        average: { item1: "unanswered", item2: "unanswered", item3: "unanswered", item4: "unanswered", item5: "unanswered" },
-                        difficult: { item1: "unanswered", item2: "unanswered", item3: "unanswered", item4: "unanswered", item5: "unanswered" }
-                    };
-                    refreshButtonUIStates();
-                    pushStateToCloud();
-                }
-            } catch(e) { console.error(e); }
-        }
+        async function processPortalValidation() {
+            const teamVal = document.getElementById("teamField").value.trim();
+            const scorerVal = document.getElementById("scorerField").value.trim();
 
-        function selectState(tier, itemKey, selectionValue) {
-            if(!activeTeam) {
-                alert("Please declare a Core Team Identity profile title first.");
+            if(!teamVal || !scorerVal) {
+                alert("Please fill out both validation fields to proceed.");
                 return;
             }
-            currentRecord[tier][itemKey] = selectionValue;
-            refreshButtonUIStates();
-            pushStateToCloud();
-        }
 
-        function refreshButtonUIStates() {
-            ["easy", "average", "difficult"].forEach(tier => {
-                for(let i = 1; i <= 5; i++) {
-                    const currentVal = currentRecord[tier][`item${i}`];
-                    document.getElementById(`${tier}-i${i}-correct`).classList.remove("active");
-                    document.getElementById(`${tier}-i${i}-wrong`).classList.remove("active");
-                    document.getElementById(`${tier}-i${i}-unanswered`).classList.remove("active");
+            activeScopeId = teamVal.replace(/[\.#\$\[\]]/g, "-");
+            verifiedScorerName = scorerVal;
 
-                    const targetBtn = document.getElementById(`${tier}-i${i}-${currentVal}`);
-                    if(targetBtn) targetBtn.classList.add("active");
+            document.getElementById("viewTeam").innerText = teamVal;
+            document.getElementById("viewScorer").innerText = verifiedScorerName;
+
+            try {
+                const streamResponse = await fetch(`${CLOUD_TARGET_URL}/competition_teams/${activeScopeId}.json`);
+                const nodePayload = await streamResponse.json();
+                if(nodePayload && nodePayload.matrix) {
+                    trackingStateMatrix = nodePayload.matrix;
+                } else {
+                    await synchronizeCloudStore();
                 }
-            });
+                syncUIVisualStates();
+            } catch(ex) { console.error(ex); }
+
+            document.getElementById("gateway-screen").style.display = 'none';
+            document.getElementById("main-scoring-panel").style.display = 'block';
         }
 
-        function calculateMetricsTotal() {
-            let score = 0;
-            let breakdown = { easy: {c:0, w:0, n:0}, average: {c:0, w:0, n:0}, difficult: {c:0, w:0, n:0} };
+        function mutateItemStatus(tierId, itemKey, stateString) {
+            trackingStateMatrix[tierId][itemKey] = stateString;
+            syncUIVisualStates();
+            synchronizeCloudStore();
+        }
 
+        function syncUIVisualStates() {
             ["easy", "average", "difficult"].forEach(tier => {
                 for(let i = 1; i <= 5; i++) {
-                    const val = currentRecord[tier][`item${i}`];
-                    score += pointSchema[tier][val];
-                    if(val === 'correct') breakdown[tier].c++;
-                    if(val === 'wrong') breakdown[tier].w++;
-                    if(val === 'unanswered') breakdown[tier].n++;
-                }
-            });
-            return { total: score, breakdown: breakdown };
-        }
-
-        async function pushStateToCloud() {
-            if(!activeTeam) return;
-            const metrics = calculateMetricsTotal();
-
-            const payload = {
-                teamName: document.getElementById("teamNameInput").value.trim(),
-                scorerName: document.getElementById("scorerNameInput").value.trim() || "N/A",
-                totalScore: metrics.total,
-                breakdown: metrics.breakdown,
-                matrix: currentRecord
-            };
-
-            await fetch(`${DATABASE_URL}/competition_teams/${activeTeam}.json`, {
-                method: "PUT",
-                body: JSON.stringify(payload)
-            });
-        }
-
-        function generateReportPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const name = document.getElementById("teamNameInput").value.trim() || "Unspecified Profile Title";
-            const scorer = document.getElementById("scorerNameInput").value.trim() || "N/A";
-            const metrics = calculateMetricsTotal();
-
-            // Minimalist Professional layout
-            doc.setFont("times", "bold");
-            doc.setFontSize(18);
-            doc.setTextColor(0, 0, 0);
-            doc.text("AUTOMATHIC 2027 INDIVIDUAL PERFORMANCE SUMMARY", 14, 20);
-            
-            doc.setDrawColor(0, 0, 0);
-            doc.setLineWidth(0.5);
-            doc.line(14, 24, 196, 24);
-
-            doc.setFont("times", "normal");
-            doc.setFontSize(11);
-            doc.text(`Registered Profile Title: ${name}`, 14, 34);
-            doc.text(`Evaluation Officer: ${scorer}`, 14, 41);
-            doc.text(`Total Final Grade Value: ${metrics.total} pts`, 14, 48);
-
-            const tableHeaders = [["Sector Tier Category", "Evaluation Item Parameter", "Resolution State Status"]];
-            const matrixRows = [];
-            
-            ["easy", "average", "difficult"].forEach(tier => {
-                for(let i = 1; i <= 5; i++) {
-                    const rawVal = currentRecord[tier][`item${i}`] || "unscored";
-                    let stateDisplay = "NOT EVALUATED";
-                    if(rawVal === "correct") stateDisplay = "PASSED / CORRECT";
-                    if(rawVal === "wrong") stateDisplay = "FAILED / INCORRECT";
-                    if(rawVal === "unanswered") stateDisplay = "OMITTED / NO ANSWER";
+                    const itemKey = `item${i}`;
+                    const innerTargetState = trackingStateMatrix[tier][itemKey];
                     
-                    matrixRows.push([tier.toUpperCase(), `Item 0${i}`, stateDisplay]);
+                    const btnCorrect = document.getElementById(`${tier}-i${i}-correct`);
+                    const btnWrong = document.getElementById(`${tier}-i${i}-wrong`);
+                    const btnUnanswered = document.getElementById(`${tier}-i${i}-unanswered`);
+
+                    // Clean out old selection classes
+                    btnCorrect.classList.remove("active-correct");
+                    btnWrong.classList.remove("active-wrong");
+                    btnUnanswered.classList.remove("active-unanswered");
+
+                    // Inject target contextual layout class
+                    if (innerTargetState === "correct") btnCorrect.classList.add("active-correct");
+                    if (innerTargetState === "wrong") btnWrong.classList.add("active-wrong");
+                    if (innerTargetState === "unanswered") btnUnanswered.classList.add("active-unanswered");
                 }
             });
-
-            doc.autoTable({
-                head: tableHeaders,
-                body: matrixRows,
-                startY: 56,
-                theme: 'plain',
-                headStyles: { textColor: [0, 0, 0], fontStyle: 'bold', fontFamily: 'times', fontSize: 11 },
-                bodyStyles: { fontFamily: 'times', textColor: [0, 0, 0], fontSize: 10 },
-                columnStyles: { 0: { fontStyle: 'bold', width: 50 }, 1: { width: 50 } },
-                styles: { borderBottomWidth: 0.5, borderBottomColor: [180, 180, 180] }
-            });
-
-            doc.save(`Performance_Report_${name.replace(/\s+/g, '_')}.pdf`);
         }
 
-        initMatrices();
+        function processCalculatedMetrics() {
+            let accumulatedPoints = 0;
+            let metaBreakdown = { easy: {c:0, w:0, n:0}, average: {c:0, w:0, n:0}, difficult: {c:0, w:0, n:0} };
+
+            ["easy", "average", "difficult"].forEach(tier => {
+                for(let i = 1; i <= 5; i++) {
+                    const state = trackingStateMatrix[tier][`item${i}`];
+                    accumulatedPoints += scoreWeights[tier][state];
+                    if(state === 'correct') metaBreakdown[tier].c++;
+                    if(state === 'wrong') metaBreakdown[tier].w++;
+                    if(state === 'unanswered') metaBreakdown[tier].n++;
+                }
+            });
+            return { accumulatedPoints, metaBreakdown };
+        }
+
+        async function synchronizeCloudStore() {
+            if(!activeScopeId) return;
+            const computed = processCalculatedMetrics();
+            const transportPayload = {
+                teamName: document.getElementById("teamField").value.trim(),
+                scorerName: verifiedScorerName,
+                totalScore: computed.accumulatedPoints,
+                breakdown: computed.metaBreakdown,
+                matrix: trackingStateMatrix
+            };
+            await fetch(`${CLOUD_TARGET_URL}/competition_teams/${activeScopeId}.json`, {
+                method: "PUT",
+                body: JSON.stringify(transportPayload)
+            });
+        }
+
+        function triggerPDFDownload() {
+            const { jsPDF } = window.jspdf;
+            const documentReport = new jsPDF();
+            const computed = processCalculatedMetrics();
+            const rawNameString = document.getElementById("teamField").value.trim();
+
+            documentReport.setFont("Helvetica", "bold");
+            documentReport.setFontSize(20);
+            documentReport.text("OFFICIAL COMPETITION TALLY CARD", 20, 25);
+            documentReport.line(20, 28, 190, 28);
+            documentReport.setFontSize(13);
+            documentReport.text("Team Assignment: " + rawNameString, 20, 42);
+            documentReport.text("Logged Scorer Marshal: " + verifiedScorerName, 20, 50);
+            documentReport.text("Aggregated Score Yield: " + computed.accumulatedPoints + " pts", 20, 58);
+            documentReport.save("Score_Tally_" + rawNameString + ".pdf");
+        }
     </script>
 </body>
 </html>
