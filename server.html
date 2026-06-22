@@ -183,7 +183,7 @@
             
             doc.setFont("times", "bold");
             doc.setFontSize(22);
-            doc.setTextColor(26, 54, 93); // Dark Blue
+            doc.setTextColor(26, 54, 93);
             doc.text("OFFICIAL SCORE REPORT CARD", 14, 25);
             doc.setDrawColor(26, 54, 93);
             doc.line(14, 28, 196, 28);
@@ -237,13 +237,18 @@
             const doc = new jsPDF();
             
             doc.setFont("times", "bold");
-            doc.setFontSize(16);
+            doc.setFontSize(14);
             doc.setTextColor(26, 54, 93);
+            // Title matching exact specifications
             doc.text("MASTER INSTITUTIONAL STANDINGS SCORE LEDGER", 14, 20);
             
+            // Clean table matching your required spacing layouts exactly
             const headers = [["Rank", "Institutional Title Profile", "Evaluator Officer", "Easy", "Average", "Difficult", "Total Final Mark"]];
+            
             const bodyData = globalCachedTeamsList.map((team, idx) => [
-                `#${idx + 1}`, team.teamName, team.scorerName || 'N/A',
+                `#${idx + 1}`, 
+                team.teamName, 
+                team.scorerName || 'N/A',
                 `${team.breakdown?.easy?.c ?? 0}/${team.breakdown?.easy?.w ?? 0}/${team.breakdown?.easy?.n ?? 0}`,
                 `${team.breakdown?.average?.c ?? 0}/${team.breakdown?.average?.w ?? 0}/${team.breakdown?.average?.n ?? 0}`,
                 `${team.breakdown?.difficult?.c ?? 0}/${team.breakdown?.difficult?.w ?? 0}/${team.breakdown?.difficult?.n ?? 0}`,
@@ -253,13 +258,39 @@
             doc.autoTable({
                 head: headers,
                 body: bodyData,
-                startY: 28,
-                theme: 'grid',
-                headStyles: { fillColor: [26, 54, 93], fontFamily: 'times' },
-                bodyStyles: { fontFamily: 'times' }
+                startY: 26,
+                theme: 'plain', // Minimalist clean look
+                headStyles: { 
+                    textColor: [26, 54, 93], 
+                    fontStyle: 'bold', 
+                    fontFamily: 'times',
+                    fontSize: 10,
+                    cellPadding: 3
+                },
+                bodyStyles: { 
+                    fontFamily: 'times', 
+                    textColor: [0, 0, 0],
+                    fontSize: 10,
+                    cellPadding: 4
+                },
+                columnStyles: {
+                    0: { width: 12, fontStyle: 'bold' },
+                    1: { width: 75 },
+                    2: { width: 30 },
+                    3: { width: 18, halign: 'center' },
+                    4: { width: 22, halign: 'center' },
+                    5: { width: 22, halign: 'center' },
+                    6: { width: 25, halign: 'right', fontStyle: 'bold' }
+                },
+                drawHorizontalLine: (link, opts) => true,
+                styles: {
+                    borderBottomWidth: 0.5,
+                    borderBottomColor: [200, 200, 200]
+                }
             });
 
             doc.save("Master_Standings_Ledger.pdf");
+            writeLog("Exported full corporate ledger standings chart file.");
         }
 
         fetchCloudUpdates();
