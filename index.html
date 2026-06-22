@@ -3,232 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academic Evaluation & Scoring Ledger</title>
+    <title>AutoMATHic 2027 Score Sheet App</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
-        :root {
-            --primary-blue: #1a365d;
-            --secondary-blue: #2b6cb0;
-            --bg-body: #f7fafc;
-            --bg-container: #ffffff;
-            --border-color: #cbd5e0;
-            --text-dark: #2d3748;
-        }
-        .dark-theme {
-            --primary-blue: #90cdf4;
-            --secondary-blue: #63b3ed;
-            --bg-body: #1a202c;
-            --bg-container: #2d3748;
-            --border-color: #4a5568;
-            --text-dark: #e2e8f0;
-        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        @keyframes pulseGlow {
+            0% { text-shadow: 0 0 10px rgba(0, 255, 100, 0.4), 0 0 20px rgba(0, 255, 100, 0.2); }
+            50% { text-shadow: 0 0 20px rgba(0, 255, 100, 0.8), 0 0 30px rgba(0, 255, 100, 0.4); }
+            100% { text-shadow: 0 0 10px rgba(0, 255, 100, 0.4), 0 0 20px rgba(0, 255, 100, 0.2); }
+        }
+
+        @keyframes scanline {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100%; }
+        }
+
         body {
             font-family: "Times New Roman", Times, serif;
-            background-color: var(--bg-body);
-            color: var(--primary-blue);
-            padding: 40px 20px;
+            background-color: #0b0f12;
+            color: #00ff64;
+            padding: 30px 15px;
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: background 0.2s, color 0.2s;
+            justify-content: center;
+            background-image: linear-gradient(rgba(0, 255, 100, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 255, 100, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
         }
-        .theme-toggle {
-            align-self: flex-end;
+
+        .console-container {
             width: 100%;
-            max-width: 750px;
-            margin-bottom: 15px;
-            text-align: right;
+            max-width: 680px;
+            background: #11161b;
+            border: 2px solid #00ff64;
+            border-radius: 4px;
+            padding: 30px;
+            box-shadow: 0 0 25px rgba(0, 255, 100, 0.15);
+            position: relative;
+            overflow: hidden;
         }
-        .theme-toggle button {
-            background: none;
-            border: 1px solid var(--primary-blue);
-            color: var(--primary-blue);
-            font-family: "Times New Roman", Times, serif;
-            padding: 6px 12px;
-            cursor: pointer;
-            font-weight: bold;
+
+        .console-container::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 10;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
         }
-        .ledger-container {
+
+        /* Cosmic Display Showcase */
+        .celestial-showcase {
             width: 100%;
-            max-width: 750px;
-            background: var(--bg-container);
-            border: 2px solid var(--primary-blue);
-            padding: 35px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-        h2 {
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-            font-size: 24px;
-            font-weight: bold;
-        }
-        .subtitle {
-            text-align: center;
-            font-style: italic;
+            height: 160px;
+            background-color: #050709;
+            background-image: url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=800&q=80');
+            background-size: cover;
+            background-position: center;
+            border: 1px solid #00ff64;
             margin-bottom: 25px;
-            color: var(--text-dark);
-            font-size: 14px;
+            border-radius: 2px;
+            position: relative;
         }
-        .identity-table {
-            width: 100%;
-            border-collapse: collapse;
+
+        .celestial-showcase::before {
+            content: "SYSTEM LIVE ORIENTATION SCAN";
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            background: #11161b;
+            padding: 2px 6px;
+            font-size: 11px;
+            font-weight: bold;
+            border: 1px solid #00ff64;
+        }
+
+        h2 {
+            color: #00ff64;
+            animation: pulseGlow 3s infinite ease-in-out;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 26px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #00ff64;
+            padding-bottom: 15px;
+        }
+        
+        .profile-box {
+            background: #161f24;
+            border: 1px solid #00ff64;
+            padding: 20px;
             margin-bottom: 30px;
         }
-        .identity-table td {
-            border: 1px solid var(--border-color);
-            padding: 10px;
-            color: var(--text-dark);
+        .profile-box h3 { color: #00ff64; font-size: 14px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;}
+        
+        .input-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
         }
-        .identity-table td.label {
-            font-weight: bold;
-            color: var(--primary-blue);
-            width: 25%;
-            background-color: rgba(26, 54, 93, 0.03);
-            text-transform: uppercase;
-            font-size: 13px;
-        }
-        .identity-table input[type="text"] {
-            width: 100%;
-            border: none;
-            background: transparent;
+        
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            background: #0b0f12;
+            border: 1px solid #00ff64;
+            color: #00ff64;
             font-family: "Times New Roman", Times, serif;
             font-size: 16px;
-            color: var(--primary-blue);
             outline: none;
         }
-        .report-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 25px;
+        input[type="text"]:focus { box-shadow: 0 0 10px rgba(0, 255, 100, 0.4); }
+        input::placeholder { color: rgba(0, 255, 100, 0.4); }
+
+        .tier-section {
+            margin-bottom: 35px;
+            border: 1px solid #00ff64;
+            background: #0d1216;
+            padding: 20px 15px 10px 15px;
         }
-        .report-table th {
-            background-color: var(--primary-blue);
-            color: #ffffff;
-            padding: 10px;
-            font-weight: bold;
+        .tier-header {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 15px;
             text-transform: uppercase;
-            font-size: 13px;
-            border: 1px solid var(--primary-blue);
+            letter-spacing: 0.5px;
+            border-bottom: 1px dashed rgba(0, 255, 100, 0.4);
+            padding-bottom: 5px;
         }
-        .report-table td {
-            border: 1px solid var(--border-color);
+
+        .item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0, 255, 100, 0.02);
             padding: 8px 12px;
-            color: var(--text-dark);
-            vertical-align: middle;
+            margin-bottom: 10px;
+            border: 1px solid rgba(0, 255, 100, 0.1);
         }
-        .tier-row-header {
-            background-color: rgba(26, 54, 93, 0.05);
-            font-weight: bold;
-            color: var(--primary-blue);
-            font-size: 14px;
-        }
-        .item-label {
-            font-weight: bold;
-            text-align: center;
-            width: 15%;
-        }
-        .status-cell {
-            width: 10%;
-            text-align: center;
-        }
-        .status-circle {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background-color: #24b353;
-            display: inline-block;
-        }
+        .item-label { font-weight: bold; font-size: 15px; color: #00ff64; }
+        
         .btn-group {
             display: flex;
-            gap: 5px;
-            justify-content: flex-end;
+            gap: 8px;
         }
-        .action-btn {
-            background: transparent;
-            border: 1px solid var(--border-color);
-            color: var(--text-dark);
+        .state-btn {
+            background: #0b0f12;
+            border: 1px solid rgba(0, 255, 100, 0.4);
+            color: rgba(0, 255, 100, 0.7);
+            padding: 6px 14px;
             font-family: "Times New Roman", Times, serif;
-            padding: 4px 12px;
             font-size: 13px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
         }
-        .action-btn:hover {
-            background-color: rgba(26, 54, 93, 0.05);
-        }
-        .action-btn.btn-correct.active { background-color: #1a365d !important; color: #ffffff !important; border-color: #1a365d; font-weight: bold; }
-        .action-btn.btn-wrong.active { background-color: #9b2c2c !important; color: #ffffff !important; border-color: #9b2c2c; font-weight: bold; }
-        .action-btn.btn-none.active { background-color: #2b6cb0 !important; color: #ffffff !important; border-color: #2b6cb0; font-weight: bold; }
+        .state-btn:hover { background: rgba(0, 255, 100, 0.1); color: #00ff64; }
+        
+        .btn-correct.active { background: #00ff64 !important; color: #000000 !important; font-weight: bold; box-shadow: 0 0 10px rgba(0, 255, 100, 0.4); border-color: #00ff64; }
+        .btn-wrong.active { background: #ff3333 !important; color: #ffffff !important; font-weight: bold; box-shadow: 0 0 10px rgba(255, 51, 51, 0.4); border-color: #ff3333; }
+        .btn-none.active { background: #33a6ff !important; color: #ffffff !important; font-weight: bold; box-shadow: 0 0 10px rgba(51, 166, 255, 0.4); border-color: #33a6ff; }
 
-        .submit-box {
-            text-align: center;
-            margin-top: 30px;
-        }
-        .print-btn {
-            background-color: var(--primary-blue);
-            color: white;
-            border: 1px solid var(--primary-blue);
+        .pdf-btn {
+            width: 100%;
+            background: #00ff64;
+            color: #000000;
+            border: 2px solid #00ff64;
+            padding: 15px;
             font-family: "Times New Roman", Times, serif;
+            font-weight: 700;
             font-size: 16px;
-            font-weight: bold;
-            padding: 12px 35px;
             cursor: pointer;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            transition: all 0.2s;
         }
-        .print-btn:hover {
-            opacity: 0.9;
-        }
-        .pipeline-status {
-            text-align: center;
-            font-size: 12px;
-            margin-top: 15px;
-            font-style: italic;
-            color: var(--text-dark);
-        }
+        .pdf-btn:hover { background: transparent; color: #00ff64; box-shadow: 0 0 15px rgba(0, 255, 100, 0.4); }
+        .sync-status { text-align: center; font-size: 12px; color: #00ff64; margin-top: 12px; opacity: 0.8; font-style: italic; }
     </style>
 </head>
 <body>
 
-    <div class="theme-toggle">
-        <button onclick="toggleTheme()">Toggle Bright / Dark Layout</button>
-    </div>
-
-    <div class="ledger-container">
-        <h2>Official Evaluation Grade Report</h2>
-        <div class="subtitle">Scoring Input Matrix Terminal Module</div>
+    <div class="console-container">
+        <h2>Welcome to AutoMATHic 2027 Score Sheet App</h2>
         
-        <table class="identity-table">
-            <tr>
-                <td class="label">Target Team Title</td>
-                <td><input type="text" id="teamNameInput" placeholder="Click here to input team identity profile..." onchange="updateTeamIdentity()"></td>
-            </tr>
-            <tr>
-                <td class="label">Scorer Examiner</td>
-                <td><input type="text" id="scorerNameInput" placeholder="Click here to specify examiner name..." onchange="pushStateToCloud()"></td>
-            </tr>
-        </table>
-
-        <table class="report-table">
-            <thead>
-                <tr>
-                    <th>Item ID</th>
-                    <th style="text-align: center;">Status</th>
-                    <th style="text-align: right; padding-right: 25px;">Grade Evaluation Input Actions</th>
-                </tr>
-            </thead>
-            <tbody id="evaluationMatrixBody">
-                <!-- Programmatically generated rows -->
-            </tbody>
-        </table>
-
-        <div class="submit-box">
-            <button class="print-btn" onclick="generateReportPDF()">Print Grade Summary PDF</button>
+        <div class="celestial-showcase"></div>
+        
+        <div class="profile-box">
+            <h3>Identity Core Verification</h3>
+            <div class="input-row">
+                <input type="text" id="teamNameInput" placeholder="Target Team Name Entry..." onchange="updateTeamIdentity()">
+                <input type="text" id="scorerNameInput" placeholder="Examiner Signature Code..." onchange="pushStateToCloud()">
+            </div>
         </div>
-        <div class="pipeline-status">System Pipeline Synced & Online.</div>
+
+        <div class="tier-section">
+            <div class="tier-header">🟢 Easy Tier Matrix Breakdown (+2 / -2 / 0)</div>
+            <div id="easyContainer"></div>
+        </div>
+
+        <div class="tier-section">
+            <div class="tier-header">🟡 Average Tier Matrix Breakdown (+10 / -5 / -2)</div>
+            <div id="averageContainer"></div>
+        </div>
+
+        <div class="tier-section">
+            <div class="tier-header">🔴 Difficult Tier Matrix Breakdown (+25 / -10 / -5)</div>
+            <div id="difficultContainer"></div>
+        </div>
+
+        <button class="pdf-btn" onclick="generateReportPDF()">Print Professional Grade Report</button>
+        <div class="sync-status">// Automated Node Uplink Matrix Operational and Synced.</div>
     </div>
 
     <script>
@@ -236,51 +225,37 @@
         let activeTeam = "";
         
         let currentRecord = {
-            easy: { item1: "unscored", item2: "unscored", item3: "unscored", item4: "unscored", item5: "unscored" },
-            average: { item1: "unscored", item2: "unscored", item3: "unscored", item4: "unscored", item5: "unscored" },
-            difficult: { item1: "unscored", item2: "unscored", item3: "unscored", item4: "unscored", item5: "unscored" }
+            easy: { item1: "unanswered", item2: "unanswered", item3: "unanswered", item4: "unanswered", item5: "unanswered" },
+            average: { item1: "unanswered", item2: "unanswered", item3: "unanswered", item4: "unanswered", item5: "unanswered" },
+            difficult: { item1: "unanswered", item2: "unanswered", item3: "unanswered", item4: "unanswered", item5: "unanswered" }
         };
 
         const pointSchema = {
-            easy: { correct: 2, wrong: -2, unanswered: 0, unscored: 0 },
-            average: { correct: 10, wrong: -5, unanswered: -2, unscored: 0 },
-            difficult: { correct: 25, wrong: -10, unanswered: -5, unscored: 0 }
+            easy: { correct: 2, wrong: -2, unanswered: 0 },
+            average: { correct: 10, wrong: -5, unanswered: -2 },
+            difficult: { correct: 25, wrong: -10, unanswered: -5 }
         };
 
-        function toggleTheme() {
-            document.body.classList.toggle('dark-theme');
+        function initMatrices() {
+            renderTier("easy", document.getElementById("easyContainer"));
+            renderTier("average", document.getElementById("averageContainer"));
+            renderTier("difficult", document.getElementById("difficultContainer"));
         }
 
-        function initMatrixGrid() {
-            const tbody = document.getElementById("evaluationMatrixBody");
+        function renderTier(tierKey, elementContainer) {
             let html = "";
-            
-            const sections = [
-                { key: "easy", name: "EASY SECTOR TIERS (+2 / -2 / 0)" },
-                { key: "average", name: "AVERAGE SECTOR TIERS (+10 / -5 / -2)" },
-                { key: "difficult", name: "DIFFICULT SECTOR TIERS (+25 / -10 / -5)" }
-            ];
-
-            sections.forEach(sec => {
-                html += `<tr><td colspan="3" class="tier-row-header">${sec.name}</td></tr>`;
-                for(let i = 1; i <= 5; i++) {
-                    html += `
-                        <tr>
-                            <td class="item-label">Item 0${i}</td>
-                            <td class="status-cell">
-                                <span class="status-circle" id="ind-${sec.key}-item${i}"></span>
-                            </td>
-                            <td>
-                                <div class="btn-group">
-                                    <button class="action-btn btn-correct" id="${sec.key}-i${i}-correct" onclick="selectState('${sec.key}', 'item${i}', 'correct')">Correct</button>
-                                    <button class="action-btn btn-wrong" id="${sec.key}-i${i}-wrong" onclick="selectState('${sec.key}', 'item${i}', 'wrong')">Wrong</button>
-                                    <button class="action-btn btn-none" id="${sec.key}-i${i}-unanswered" onclick="selectState('${sec.key}', 'item${i}', 'unanswered')">No Ans</button>
-                                </div>
-                            </td>
-                        </tr>`;
-                }
-            });
-            tbody.innerHTML = html;
+            for(let i = 1; i <= 5; i++) {
+                html += `
+                    <div class="item-row">
+                        <div class="item-label">Item 0${i}</div>
+                        <div class="btn-group">
+                            <button class="state-btn btn-correct" id="${tierKey}-i${i}-correct" onclick="selectState('${tierKey}', 'item${i}', 'correct')">Correct</button>
+                            <button class="state-btn btn-wrong" id="${tierKey}-i${i}-wrong" onclick="selectState('${tierKey}', 'item${i}', 'wrong')">Wrong</button>
+                            <button class="state-btn btn-none" id="${tierKey}-i${i}-unanswered" onclick="selectState('${tierKey}', 'item${i}', 'unanswered')">No Ans</button>
+                        </div>
+                    </div>`;
+            }
+            elementContainer.innerHTML = html;
         }
 
         async function updateTeamIdentity() {
@@ -294,52 +269,44 @@
                 if(existingData) {
                     if(existingData.matrix) currentRecord = existingData.matrix;
                     if(existingData.scorerName) document.getElementById("scorerNameInput").value = existingData.scorerName;
-                    refreshUI();
+                    refreshButtonUIStates();
                 } else {
                     currentRecord = {
-                        easy: { item1: "unscored", item2: "unscored", item3: "unscored", item4: "unscored", item5: "unscored" },
-                        average: { item1: "unscored", item2: "unscored", item3: "unscored", item4: "unscored", item5: "unscored" },
-                        difficult: { item1: "unscored", item2: "unscored", item3: "unscored", item4: "unscored", item5: "unscored" }
+                        easy: { item1: "unanswered", item2: "unanswered", item3: "unanswered", item4: "unanswered", item5: "unanswered" },
+                        average: { item1: "unanswered", item2: "unanswered", item3: "unanswered", item4: "unanswered", item5: "unanswered" },
+                        difficult: { item1: "unanswered", item2: "unanswered", item3: "unanswered", item4: "unanswered", item5: "unanswered" }
                     };
-                    refreshUI();
+                    refreshButtonUIStates();
                     pushStateToCloud();
                 }
             } catch(e) { console.error(e); }
         }
 
-        function selectState(tier, itemKey, val) {
+        function selectState(tier, itemKey, selectionValue) {
             if(!activeTeam) {
-                alert("Please declare a Target Team Title profile identifier code first.");
+                alert("Please declare a Core Team Identity profile title first.");
                 return;
             }
-            currentRecord[tier][itemKey] = val;
-            refreshUI();
+            currentRecord[tier][itemKey] = selectionValue;
+            refreshButtonUIStates();
             pushStateToCloud();
         }
 
-        function refreshUI() {
+        function refreshButtonUIStates() {
             ["easy", "average", "difficult"].forEach(tier => {
                 for(let i = 1; i <= 5; i++) {
-                    const itemKey = `item${i}`;
-                    const currentVal = currentRecord[tier][itemKey];
-                    
+                    const currentVal = currentRecord[tier][`item${i}`];
                     document.getElementById(`${tier}-i${i}-correct`).classList.remove("active");
                     document.getElementById(`${tier}-i${i}-wrong`).classList.remove("active");
                     document.getElementById(`${tier}-i${i}-unanswered`).classList.remove("active");
 
-                    const indicator = document.getElementById(`ind-${tier}-${itemKey}`);
-                    if(currentVal === "unscored") {
-                        indicator.style.display = "inline-block";
-                    } else {
-                        indicator.style.display = "none";
-                        const target = document.getElementById(`${tier}-i${i}-${currentVal}`);
-                        if(target) target.classList.add("active");
-                    }
+                    const targetBtn = document.getElementById(`${tier}-i${i}-${currentVal}`);
+                    if(targetBtn) targetBtn.classList.add("active");
                 }
             });
         }
 
-        function calculateTotals() {
+        function calculateMetricsTotal() {
             let score = 0;
             let breakdown = { easy: {c:0, w:0, n:0}, average: {c:0, w:0, n:0}, difficult: {c:0, w:0, n:0} };
 
@@ -357,7 +324,8 @@
 
         async function pushStateToCloud() {
             if(!activeTeam) return;
-            const metrics = calculateTotals();
+            const metrics = calculateMetricsTotal();
+
             const payload = {
                 teamName: document.getElementById("teamNameInput").value.trim(),
                 scorerName: document.getElementById("scorerNameInput").value.trim() || "N/A",
@@ -365,6 +333,7 @@
                 breakdown: metrics.breakdown,
                 matrix: currentRecord
             };
+
             await fetch(`${DATABASE_URL}/competition_teams/${activeTeam}.json`, {
                 method: "PUT",
                 body: JSON.stringify(payload)
@@ -374,27 +343,56 @@
         function generateReportPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            const name = document.getElementById("teamNameInput").value.trim() || "Unspecified Profile";
+            const name = document.getElementById("teamNameInput").value.trim() || "Unspecified Profile Title";
             const scorer = document.getElementById("scorerNameInput").value.trim() || "N/A";
-            const metrics = calculateTotals();
+            const metrics = calculateMetricsTotal();
 
+            // Minimalist Professional layout
             doc.setFont("times", "bold");
-            doc.setFontSize(20);
-            doc.setTextColor(26, 54, 93);
-            doc.text("COMPETITION EVALUATION REPORT CARD", 14, 25);
-            doc.setDrawColor(26, 54, 93);
-            doc.line(14, 28, 196, 28);
+            doc.setFontSize(18);
+            doc.setTextColor(0, 0, 0);
+            doc.text("AUTOMATHIC 2027 INDIVIDUAL PERFORMANCE SUMMARY", 14, 20);
             
+            doc.setDrawColor(0, 0, 0);
+            doc.setLineWidth(0.5);
+            doc.line(14, 24, 196, 24);
+
             doc.setFont("times", "normal");
-            doc.setFontSize(12);
-            doc.setTextColor(40, 40, 40);
-            doc.text(`Team Profile Title: ${name}`, 14, 40);
-            doc.text(`Examiner of Record: ${scorer}`, 14, 48);
-            doc.text(`Final Calculated Grade Score: ${metrics.total} pts`, 14, 56);
-            doc.save(`Report_Card_${name.replace(/\s+/g, '_')}.pdf`);
+            doc.setFontSize(11);
+            doc.text(`Registered Profile Title: ${name}`, 14, 34);
+            doc.text(`Evaluation Officer: ${scorer}`, 14, 41);
+            doc.text(`Total Final Grade Value: ${metrics.total} pts`, 14, 48);
+
+            const tableHeaders = [["Sector Tier Category", "Evaluation Item Parameter", "Resolution State Status"]];
+            const matrixRows = [];
+            
+            ["easy", "average", "difficult"].forEach(tier => {
+                for(let i = 1; i <= 5; i++) {
+                    const rawVal = currentRecord[tier][`item${i}`] || "unscored";
+                    let stateDisplay = "NOT EVALUATED";
+                    if(rawVal === "correct") stateDisplay = "PASSED / CORRECT";
+                    if(rawVal === "wrong") stateDisplay = "FAILED / INCORRECT";
+                    if(rawVal === "unanswered") stateDisplay = "OMITTED / NO ANSWER";
+                    
+                    matrixRows.push([tier.toUpperCase(), `Item 0${i}`, stateDisplay]);
+                }
+            });
+
+            doc.autoTable({
+                head: tableHeaders,
+                body: matrixRows,
+                startY: 56,
+                theme: 'plain',
+                headStyles: { textColor: [0, 0, 0], fontStyle: 'bold', fontFamily: 'times', fontSize: 11 },
+                bodyStyles: { fontFamily: 'times', textColor: [0, 0, 0], fontSize: 10 },
+                columnStyles: { 0: { fontStyle: 'bold', width: 50 }, 1: { width: 50 } },
+                styles: { borderBottomWidth: 0.5, borderBottomColor: [180, 180, 180] }
+            });
+
+            doc.save(`Performance_Report_${name.replace(/\s+/g, '_')}.pdf`);
         }
 
-        initMatrixGrid();
+        initMatrices();
     </script>
 </body>
 </html>
