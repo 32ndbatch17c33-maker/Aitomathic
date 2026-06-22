@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>UPCES - Scorer Terminal Portal</title>
     
-    <!-- PWA & Cross-Platform Meta Tags -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0d1117">
     
-    <!-- iOS / Apple Specific Optimizations -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Scorer App">
@@ -28,7 +26,6 @@
             --border-light: #e2e8f0;
             --gradient-xm: linear-gradient(135deg, var(--xm-vivid-blue), var(--xm-light-purple));
             
-            /* Active Button Overrides */
             --forest-green: #1e4620;
             --deep-dark-red: #7f1d1d;
         }
@@ -38,7 +35,7 @@
             margin: 0; 
             padding: 0; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            -webkit-tap-highlight-color: transparent; /* Prevents ugly grey boxes clicking on iPhone */
+            -webkit-tap-highlight-color: transparent;
         }
         
         body { 
@@ -122,9 +119,7 @@
         .welcome-banner h2 { font-size: 26px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.5px; }
         .welcome-banner p { font-size: 14px; opacity: 0.9; font-weight: 500; }
 
-        .session-badge-row { 
-            display: flex; gap: 16px; margin-bottom: 40px; 
-        }
+        .session-badge-row { display: flex; gap: 16px; margin-bottom: 40px; }
         .meta-pill {
             flex: 1; background: #f8fafc; border: 1px solid var(--border-light); 
             padding: 16px; border-radius: 12px; font-size: 14px; color: var(--text-muted);
@@ -146,16 +141,6 @@
             margin-bottom: 14px; border: 1px solid var(--border-light);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        
-        /* Mobile responsive alignment */
-        @media (max-width: 600px) {
-            body { padding: 10px; }
-            #main-scoring-panel { padding: 20px; border-radius: 16px; }
-            .scoring-item-card { flex-direction: column; gap: 12px; align-items: flex-start; padding: 16px; }
-            .selector-button-row { width: 100%; justify-content: space-between; }
-            .toggle-choice-btn { flex: 1; text-align: center; padding: 10px 0; }
-            .session-badge-row { flex-direction: column; gap: 10px; }
         }
 
         .scoring-item-card:hover {
@@ -179,22 +164,9 @@
         }
         .toggle-choice-btn:hover { color: var(--text-dark); background: rgba(255,255,255,0.6); }
         
-        /* Color Overrides */
-        .toggle-choice-btn.active-correct { 
-            background: var(--forest-green) !important; 
-            color: #ffffff !important; 
-            box-shadow: 0 4px 12px rgba(30, 70, 32, 0.35);
-        }
-        .toggle-choice-btn.active-wrong { 
-            background: var(--deep-dark-red) !important; 
-            color: #ffffff !important; 
-            box-shadow: 0 4px 12px rgba(127, 29, 29, 0.35);
-        }
-        .toggle-choice-btn.active-unanswered { 
-            background: var(--obsidian) !important; 
-            color: #ffffff !important; 
-            box-shadow: 0 4px 12px rgba(13, 17, 23, 0.35);
-        }
+        .toggle-choice-btn.active-correct { background: var(--forest-green) !important; color: #ffffff !important; box-shadow: 0 4px 12px rgba(30, 70, 32, 0.35); }
+        .toggle-choice-btn.active-wrong { background: var(--deep-dark-red) !important; color: #ffffff !important; box-shadow: 0 4px 12px rgba(127, 29, 29, 0.35); }
+        .toggle-choice-btn.active-unanswered { background: var(--obsidian) !important; color: #ffffff !important; box-shadow: 0 4px 12px rgba(13, 17, 23, 0.35); }
         
         .master-submit-btn { 
             width: 100%; padding: 18px; font-size: 16px; 
@@ -205,17 +177,24 @@
             transition: opacity 0.2s ease, transform 0.1s ease;
         }
         .master-submit-btn:hover { opacity: 0.95; transform: translateY(-1px); }
+
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            #main-scoring-panel { padding: 20px; border-radius: 16px; }
+            .scoring-item-card { flex-direction: column; gap: 12px; align-items: flex-start; padding: 16px; }
+            .selector-button-row { width: 100%; justify-content: space-between; }
+            .toggle-choice-btn { flex: 1; text-align: center; padding: 10px 0; }
+            .session-badge-row { flex-direction: column; gap: 10px; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- 1. Intro Transition Layer -->
     <div id="entrance-screen">
         <div class="netflix-title-clone">UPCES</div>
         <div class="footer-brand-tag">powered by APPerin</div>
     </div>
 
-    <!-- 2. Entrance Block -->
     <div id="gateway-screen">
         <div class="qualtrics-card-clone">
             <div class="brand-logo-container">
@@ -234,13 +213,9 @@
             
             <button class="qualtrics-btn-blue" onclick="processPortalValidation()">Proceed</button>
         </div>
-        
-        <div class="security-notice-text">
-            If you are not scorer do not try to access this app. Thank you.
-        </div>
+        <div class="security-notice-text">If you are not scorer do not try to access this app. Thank you.</div>
     </div>
 
-    <!-- 3. Main Scoring Dashboard -->
     <div id="main-scoring-panel">
         <div class="welcome-banner">
             <h2>Welcome to the Scorer App Interface</h2>
@@ -252,18 +227,9 @@
             <div class="meta-pill">Active Registry Marshal <strong id="viewScorer">N/A</strong></div>
         </div>
 
-        <div class="tier-group-container">
-            <div class="tier-group-title">Easy Division</div>
-            <div id="boxEasy"></div>
-        </div>
-        <div class="tier-group-container">
-            <div class="tier-group-title">Average Division</div>
-            <div id="boxAverage"></div>
-        </div>
-        <div class="tier-group-container">
-            <div class="tier-group-title">Difficult Division</div>
-            <div id="boxDifficult"></div>
-        </div>
+        <div class="tier-group-container"><div class="tier-group-title">Easy Division</div><div id="boxEasy"></div></div>
+        <div class="tier-group-container"><div class="tier-group-title">Average Division</div><div id="boxAverage"></div></div>
+        <div class="tier-group-container"><div class="tier-group-title">Difficult Division</div><div id="boxDifficult"></div></div>
 
         <button class="master-submit-btn" onclick="triggerPDFDownload()">Generate Document Summary Report</button>
     </div>
@@ -287,18 +253,18 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
-                document.getElementById('entrance-screen').style.display = 'none';
-                document.getElementById('gateway-screen').style.display = 'block';
+                const entrance = document.getElementById('entrance-screen');
+                const gateway = document.getElementById('gateway-screen');
+                if (entrance) entrance.style.display = 'none';
+                if (gateway) gateway.style.display = 'block';
             }, 3500);
-            assembleMatrixDOMs();
+            
+            try { assembleMatrixDOMs(); } catch(e) { console.error(e); }
         });
 
-        // PWA Service worker initialization script block
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Cross-platform worker ready.', reg.scope))
-                    .catch(err => console.log('Worker crashed.', err));
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log(err));
             });
         }
 
@@ -328,10 +294,7 @@
             const teamVal = document.getElementById("teamField").value.trim();
             const scorerVal = document.getElementById("scorerField").value.trim();
 
-            if(!teamVal || !scorerVal) {
-                alert("Please fill out both validation fields to proceed.");
-                return;
-            }
+            if(!teamVal || !scorerVal) return alert("Please fill out both validation fields to proceed.");
 
             activeScopeId = teamVal.replace(/[\.#\$\[\]]/g, "-");
             verifiedScorerName = scorerVal;
@@ -363,8 +326,7 @@
         function syncUIVisualStates() {
             ["easy", "average", "difficult"].forEach(tier => {
                 for(let i = 1; i <= 5; i++) {
-                    const itemKey = `item${i}`;
-                    const innerTargetState = trackingStateMatrix[tier][itemKey];
+                    const innerTargetState = trackingStateMatrix[tier][`item${i}`];
                     
                     const btnCorrect = document.getElementById(`${tier}-i${i}-correct`);
                     const btnWrong = document.getElementById(`${tier}-i${i}-wrong`);
@@ -409,4 +371,26 @@
             };
             await fetch(`${CLOUD_TARGET_URL}/competition_teams/${activeScopeId}.json`, {
                 method: "PUT",
-                
+                body: JSON.stringify(transportPayload)
+            });
+        }
+
+        function triggerPDFDownload() {
+            const { jsPDF } = window.jspdf;
+            const documentReport = new jsPDF();
+            const computed = processCalculatedMetrics();
+            const rawNameString = document.getElementById("teamField").value.trim();
+
+            documentReport.setFont("Helvetica", "bold");
+            documentReport.setFontSize(20);
+            documentReport.text("OFFICIAL COMPETITION TALLY CARD", 20, 25);
+            documentReport.line(20, 28, 190, 28);
+            documentReport.setFontSize(13);
+            documentReport.text("Team Assignment: " + rawNameString, 20, 42);
+            documentReport.text("Logged Scorer Marshal: " + verifiedScorerName, 20, 50);
+         documentReport.text("Aggregated Score Yield: " + computed.accumulatedPoints + " pts", 20, 58);
+            documentReport.save("Score_Tally_" + rawNameString + ".pdf");
+        }
+    </script>
+</body>
+</html>  
