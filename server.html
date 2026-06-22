@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Sheet Dashboard Server</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #fcfdfe;
+            color: #1e2620;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .wrapper { width: 100%; max-width: 1000px; }
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #2d7a43;
+            padding-bottom: 15px;
+        }
+        h1 { color: #2d7a43; font-size: 26px; }
+        .btn-box { display: flex; gap: 10px; }
+        .btn {
+            padding: 10px 18px; font-weight: 600; border-radius: 4px; cursor: pointer; border: none; font-size: 14px;
+        }
+        .pdf-btn { background-color: #2d7a43; color: white; }
+        .wipe-btn { background: transparent; border: 1px solid #ca3c3c; color: #ca3c3c; }
+        .wipe-btn:hover { background: #ca3c3c; color: #fff; }
+        
+        table { width: 100%; border-collapse: collapse; background: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        th, td { border: 1px solid #dce4df; padding: 12px 14px; text-align: left; font-size: 14px; }
+        th { background-color: #2d7a43; color: #ffffff; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        tr:nth-child(even) { background-color: #f7faf8; }
+        
+        .txt-correct { color: #2d7a43; font-weight: 700; } /* Green */
+        .txt-wrong { color: #ca3c3c; font-weight: 700; }   /* Red */
+        .txt-none { color: #2b5cb8; font-weight: 700; }    /* Blue */
+        
+        .score-total { font-weight: 800; background-color: #eaf5ed; font-size: 15px; }
+        .empty { text-align: center; color: #728276; font-style: italic; padding: 40px; }
+    </style>
+</head>
+<body>
+
+    <div class="wrapper">
+        <div class="header-section">
+            <h1>Competition Master Spreadsheet</h1>
+            <div class="btn-box">
+                <button class="btn pdf-btn" onclick="generateLeaderboardPDF()">Export Leaderboard PDF</button>
+                <button class="btn wipe-btn" onclick="wipeCloudData()">Reset System Server</button>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th rowspan="2" style="width: 7%; text-align: center;">Rank</th>
+                    <th rowspan="2" style="width: 25%;">Registered Profile Title</th>
+                    <th colspan="3" style="text-align: center; background-color: #246336;">Easy Sector</th>
+                    <th colspan="3" style="text-align: center; background-color: #1b4b29;">Average Sector</th>
+                    <th colspan="3" style="text-align: center; background-color: #12331c;">Difficult Sector</th>
+                    <th rowspan="2" style="width: 14%; text-align: center;">Total Points</th>
+                </tr>
+                <tr>
+                    <th style="font-size: 10px; text-align: center;">C</th>
+                    <th style="font-size: 10px; text-align: center;">W</th>
+                    <th style="font-size: 10px; text-align: center;">N</th>
+                    <th style="font-size: 10px; text-align: center;">C</th>
+                    <th style="font-size: 10px; text-align: center;">W</th>
+                    <th style="font-size: 10px; text-align: center;">N</th>
+                    <th style="font-size: 10px; text-align: center;">C</th>
+                    <th style="font-size: 10px; text-align: center;">W</th>
+                    <th style="font-size: 10px; text-align: center;">N</th>
+                </tr>
+            </thead>
+            <tbody id="gridBody">
+                <tr><td colspan="12" class="empty">Establishing automated polling tracking data channels...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const DATABASE_URL = "https://lomhji-default-rtdb.asia-southeast1.firebasedatabase.app";
+        let globalCachedTeamsList = [];
+
+        async function fetchCloudUpdates() {
+            try {
+                const response = await fetch(`${DATABASE_URL}/competition_teams.json`);
+                const dataObject = await response.json();
+                renderDashboard(dataObject);
+            } catch (error) { console.error("Polling stream sync exception: ", error); }
+        }
+
+        function renderDashboard(dataObject) {
+            const tbody = document.getElementById('gridBody');
+            
+            if (!dataObject || Object.keys(dataObject).length === 0) {
+                globalCachedTeamsList = [];
+                tbody.innerHTML = `<tr><td colspan="12" class="empty">No live profile modules actively tracked in server registries.</td></tr>`;
+                return;
+            }
+
+            // Map structural objects out to data tracking loops
+            globalCachedTeamsList = Object.keys(dataObject).map(key => ({
+                ...dataObject[key]
+            }));
+
+            // Excel Rank Calculation sorting logic structure
+            globalCachedTeamsList.sort((a, b) => (b.totalScore || 0) - (a.totalScore || 0));
+
+            tbody.innerHTML = globalCachedTeamsList.map((team, index) => `
+                <tr>
+                    <td style="text-align: center;"><strong>#${index + 1}</strong></td>
+                    <td><strong>${team.teamName}</strong></td>
+                    
+                    <td style="text-align: center;" class="txt-correct">${team.breakdown.easy.c}</td>
+                    <td style="text-align: center;" class="txt-wrong">${team.breakdown.easy.w}</td>
+                    <td style="text-align: center;" class="txt-none">${team.breakdown.easy.n}</td>
+                    
+                    <td style="text-align: center;" class="txt-correct">${team.breakdown.average.c}</td>
+                    <td style="text-align: center;" class="txt-wrong">${team.breakdown.average.w}</td>
+                    <td style="text-align: center;" class="txt-none">${team.breakdown.average.n}</td>
+                    
+                    <td style="text-align: center;" class="txt-correct">${team.breakdown.difficult.c}</td>
+                    <td style="text-align: center;" class="txt-wrong">${team.breakdown.difficult.w}</td>
+                    <td style="text-align: center;" class="txt-none">${team.breakdown.difficult.n}</td>
+                    
+                    <td style="text-align: center;" class="score-total">${team.totalScore} pts</td>
+                </tr>
+            `).join('');
+        }
+
+        async function wipeCloudData() {
+            if(confirm("CRITICAL ACTIONS: Erase all remote server standings profiles permanently?")) {
+                await fetch(`${DATABASE_URL}/competition_teams.json`, { method: 'DELETE' });
+                fetchCloudUpdates();
+            }
+        }
+
+        function generateLeaderboardPDF() {
+            if(globalCachedTeamsList.length === 0) {
+                alert("No active data metrics to generate an export spreadsheet report module!");
+                return;
+            }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(18);
+            doc.text("MASTER LEADERBOARD RUNNING SHEET SUMMARY", 14, 20);
+            
+            // Build formal corporate table layout matrix
+            const headers = [["Rank", "Team Profile Name", "Easy (C/W/N)", "Average (C/W/N)", "Difficult (C/W/N)", "Total Points"]];
+            const bodyData = globalCachedTeamsList.map((team, idx) => [
+                `#${idx + 1}`,
+                team.teamName,
+                `${team.breakdown.easy.c} / ${team.breakdown.easy.w} / ${team.breakdown.easy.n}`,
+                `${team.breakdown.average.c} / ${team.breakdown.average.w} / ${team.breakdown.average.n}`,
+                `${team.breakdown.difficult.c} / ${team.breakdown.difficult.w} / ${team.breakdown.difficult.n}`,
+                `${team.totalScore} pts`
+            ]);
+
+            doc.autoTable({
+                head: headers,
+                body: bodyData,
+                startY: 28,
+                theme: 'grid',
+                headStyles: { fillColor: [45, 122, 67] }
+            });
+
+            doc.save("Master_Leaderboard_Report.pdf");
+        }
+
+        // Initialize automated sync sequence loop triggers
+        fetchCloudUpdates();
+        setInterval(fetchCloudUpdates, 1000);
+    </script>
+</body>
+</html>

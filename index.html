@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Futuristic Scoring Console</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: #0a0f0d;
+            color: #e2f0e6;
+            padding: 30px 15px;
+            display: flex;
+            justify-content: center;
+        }
+        .console-container {
+            width: 100%;
+            max-width: 650px;
+            background: rgba(16, 26, 20, 0.95);
+            border: 1px solid #2d7a43;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(45, 122, 67, 0.2);
+        }
+        h2 {
+            color: #4ef07c;
+            text-shadow: 0 0 10px rgba(78, 240, 124, 0.4);
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 28px;
+            letter-spacing: 1px;
+        }
+        
+        /* Profile Section */
+        .profile-box {
+            background: #121f16;
+            border: 1px dashed #2d7a43;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .profile-box h3 { color: #4ef07c; font-size: 14px; margin-bottom: 10px; text-transform: uppercase; }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            background: #0a0f0d;
+            border: 1px solid #2d7a43;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+        }
+        input[type="text"]:focus { border-color: #4ef07c; box-shadow: 0 0 8px rgba(78, 240, 124, 0.3); }
+
+        /* Category Tiers */
+        .tier-section {
+            margin-bottom: 35px;
+            border-top: 1px solid rgba(45, 122, 67, 0.3);
+            padding-top: 20px;
+        }
+        .tier-header {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .tier-easy { color: #a4f4b5; }
+        .tier-avg { color: #f4d160; }
+        .tier-diff { color: #ff6b6b; }
+
+        /* Matrix Item Rows */
+        .item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.02);
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .item-label { font-weight: 600; font-size: 15px; width: 80px; }
+        
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-grow: 1;
+            justify-content: flex-end;
+        }
+        .state-btn {
+            background: #141c17;
+            border: 1px solid #2d7a43;
+            color: #e2f0e6;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        /* Direct Scoring Interaction States */
+        .btn-correct.active { background: #2d7a43 !important; color: #fff !important; box-shadow: 0 0 10px rgba(45,122,67,0.5); }
+        .btn-wrong.active { background: #ca3c3c !important; color: #fff !important; box-shadow: 0 0 10px rgba(202,60,60,0.5); border-color: #ca3c3c; }
+        .btn-none.active { background: #2b5cb8 !important; color: #fff !important; box-shadow: 0 0 10px rgba(43,92,184,0.5); border-color: #2b5cb8; }
+
+        /* Document Generation Tool Footer */
+        .pdf-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #2d7a43 0%, #1e522d 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            font-weight: 700;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            margin-top: 15px;
+            transition: all 0.2s;
+        }
+        .pdf-btn:hover { filter: brightness(1.2); }
+        .sync-status { text-align: center; font-size: 12px; color: #4ef07c; margin-top: 10px; opacity: 0.7; }
+    </style>
+</head>
+<body>
+
+    <div class="console-container">
+        <h2>Quantum Scoring Engine</h2>
+        
+        <div class="profile-box">
+            <h3>Identity Settings</h3>
+            <input type="text" id="teamNameInput" placeholder="Type Core Team Name (e.g. Cyber Knights)" onchange="updateTeamIdentity()">
+        </div>
+
+        <div class="tier-section">
+            <div class="tier-header tier-easy">🟢 Easy Tier (Correct: +2 | Wrong: -2 | No Ans: 0)</div>
+            <div id="easyContainer"></div>
+        </div>
+
+        <div class="tier-section">
+            <div class="tier-header tier-avg">🟡 Average Tier (Correct: +10 | Wrong: -5 | No Ans: -2)</div>
+            <div id="averageContainer"></div>
+        </div>
+
+        <div class="tier-section">
+            <div class="tier-header tier-diff">🔴 Difficult Tier (Correct: +25 | Wrong: -10 | No Ans: -5)</div>
+            <div id="difficultContainer"></div>
+        </div>
+
+        <button class="pdf-btn" onclick="generateReportPDF()">Generate Summary PDF</button>
+        <div class="sync-status">⚡ Database automated live pipeline synchronization operational.</div>
+    </div>
+
+    <script>
+        const DATABASE_URL = "https://lomhji-default-rtdb.asia-southeast1.firebasedatabase.app";
+        let activeTeam = "";
+        
+        // Comprehensive matrix memory state tracking framework
+        let currentRecord = {
+            easy: { item1: "unanswered", item2: "unanswered", item3: "unanswered", item4: "unanswered", item5: "unanswered" },
+            average: { item1: "unanswered", item2: "unanswered", item3: "unanswered", item4: "unanswered", item5: "unanswered" },
+            difficult: { item1: "unanswered", item2: "unanswered", item3: "unanswered", item4: "unanswered", item5: "unanswered" }
+        };
+
+        // Standard point conversion schemas
+        const pointSchema = {
+            easy: { correct: 2, wrong: -2, unanswered: 0 },
+            average: { correct: 10, wrong: -5, unanswered: -2 },
+            difficult: { correct: 25, wrong: -10, unanswered: -5 }
+        };
+
+        function initMatrices() {
+            renderTier("easy", document.getElementById("easyContainer"));
+            renderTier("average", document.getElementById("averageContainer"));
+            renderTier("difficult", document.getElementById("difficultContainer"));
+        }
+
+        function renderTier(tierKey, elementContainer) {
+            let html = "";
+            for(let i = 1; i <= 5; i++) {
+                html += `
+                    <div class="item-row">
+                        <div class="item-label">Item 0${i}</div>
+                        <div class="btn-group">
+                            <button class="state-btn btn-correct" id="${tierKey}-i${i}-correct" onclick="selectState('${tierKey}', 'item${i}', 'correct')">Correct</button>
+                            <button class="state-btn btn-wrong" id="${tierKey}-i${i}-wrong" onclick="selectState('${tierKey}', 'item${i}', 'wrong')">Wrong</button>
+                            <button class="state-btn btn-none" id="${tierKey}-i${i}-unanswered" onclick="selectState('${tierKey}', 'item${i}', 'unanswered')">No Ans</button>
+                        </div>
+                    </div>`;
+            }
+            elementContainer.innerHTML = html;
+        }
+
+        async function updateTeamIdentity() {
+            const rawName = document.getElementById("teamNameInput").value.trim();
+            if(!rawName) return;
+
+            // Normalize names to act clean as clean database object keys
+            activeTeam = rawName.replace(/[\.#\$\[\]]/g, "-");
+            
+            // Sync current cloud metrics state to view if they already exist
+            try {
+                const response = await fetch(`${DATABASE_URL}/competition_teams/${activeTeam}.json`);
+                const existingData = await response.json();
+                if(existingData && existingData.matrix) {
+                    currentRecord = existingData.matrix;
+                    refreshButtonUIStates();
+                } else {
+                    // Start fresh baseline node record
+                    currentRecord = {
+                        easy: { item1: "unanswered", item2: "unanswered", item3: "unanswered", item4: "unanswered", item5: "unanswered" },
+                        average: { item1: "unanswered", item2: "unanswered", item3: "unanswered", item4: "unanswered", item5: "unanswered" },
+                        difficult: { item1: "unanswered", item2: "unanswered", item3: "unanswered", item4: "unanswered", item5: "unanswered" }
+                    };
+                    refreshButtonUIStates();
+                    pushStateToCloud();
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function selectState(tier, itemKey, selectionValue) {
+            if(!activeTeam) {
+                alert("ALERT: Please specify a Team Name in your identity profile box first!");
+                return;
+            }
+            // Edit status memory mapping layer natively
+            currentRecord[tier][itemKey] = selectionValue;
+            refreshButtonUIStates();
+            pushStateToCloud();
+        }
+
+        function refreshButtonUIStates() {
+            ["easy", "average", "difficult"].forEach(tier => {
+                for(let i = 1; i <= 5; i++) {
+                    const currentVal = currentRecord[tier][`item${i}`];
+                    // Clean down state alignments
+                    document.getElementById(`${tier}-i${i}-correct`).classList.remove("active");
+                    document.getElementById(`${tier}-i${i}-wrong`).classList.remove("active");
+                    document.getElementById(`${tier}-i${i}-unanswered`).classList.remove("active");
+
+                    // Set target active status
+                    const targetBtn = document.getElementById(`${tier}-i${i}-${currentVal}`);
+                    if(targetBtn) targetBtn.classList.add("active");
+                }
+            });
+        }
+
+        function calculateMetricsTotal() {
+            let score = 0;
+            let breakdown = { easy: {c:0, w:0, n:0}, average: {c:0, w:0, n:0}, difficult: {c:0, w:0, n:0} };
+
+            ["easy", "average", "difficult"].forEach(tier => {
+                for(let i = 1; i <= 5; i++) {
+                    const val = currentRecord[tier][`item${i}`];
+                    score += pointSchema[tier][val];
+                    if(val === 'correct') breakdown[tier].c++;
+                    if(val === 'wrong') breakdown[tier].w++;
+                    if(val === 'unanswered') breakdown[tier].n++;
+                }
+            });
+            return { total: score, breakdown: breakdown };
+        }
+
+        async function pushStateToCloud() {
+            if(!activeTeam) return;
+            const metrics = calculateMetricsTotal();
+
+            const payload = {
+                teamName: document.getElementById("teamNameInput").value.trim(),
+                totalScore: metrics.total,
+                breakdown: metrics.breakdown,
+                matrix: currentRecord
+            };
+
+            await fetch(`${DATABASE_URL}/competition_teams/${activeTeam}.json`, {
+                method: "PUT",
+                body: JSON.stringify(payload)
+            });
+        }
+
+        function generateReportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const name = document.getElementById("teamNameInput").value.trim() || "Unknown Team";
+            const metrics = calculateMetricsTotal();
+
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(22);
+            doc.text("COMPETITION PERFORMANCE SUMMARY", 20, 25);
+            doc.line(20, 28, 190, 28);
+
+            doc.setFontSize(14);
+            doc.text(`Team Profile Identification: ${name}`, 20, 40);
+            doc.text(`Aggregated Standing Score: ${metrics.total} Points`, 20, 48);
+
+            doc.setFontSize(16);
+            doc.text("Tier Performance Metrics Breakdown", 20, 65);
+            doc.setFont("Helvetica", "normal");
+            doc.setFontSize(12);
+            doc.text(`- Easy Sector:     ${metrics.breakdown.easy.c} Correct,  ${metrics.breakdown.easy.w} Wrong,  ${metrics.breakdown.easy.n} No Answer`, 20, 75);
+            doc.text(`- Average Sector:  ${metrics.breakdown.average.c} Correct,  ${metrics.breakdown.average.w} Wrong,  ${metrics.breakdown.average.n} No Answer`, 20, 83);
+            doc.text(`- Difficult Sector: ${metrics.breakdown.difficult.c} Correct,  ${metrics.breakdown.difficult.w} Wrong,  ${metrics.breakdown.difficult.n} No Answer`, 20, 91);
+
+            doc.save(`Performance_Report_${name.replace(/\s+/g, '_')}.pdf`);
+        }
+
+        // Initialize display arrays
+        initMatrices();
+    </script>
+</body>
+</html>
