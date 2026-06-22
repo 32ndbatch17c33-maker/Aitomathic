@@ -7,54 +7,78 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
+        :root {
+            --bg-body: #fcfdfe;
+            --text-main: #1e2620;
+            --table-bg: #ffffff;
+            --table-row-even: #f7faf8;
+            --table-border: #dce4df;
+            --header-border: #2d7a43;
+            --title-color: #2d7a43;
+        }
+        .dark-theme {
+            --bg-body: #0d1117;
+            --text-main: #c9d1d9;
+            --table-bg: #161b22;
+            --table-row-even: #21262d;
+            --table-border: #30363d;
+            --header-border: #4ef07c;
+            --title-color: #4ef07c;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Segoe UI', sans-serif;
-            background-color: #fcfdfe;
-            color: #1e2620;
+            background-color: var(--bg-body);
+            color: var(--text-main);
             padding: 40px 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            transition: background 0.3s, color 0.3s;
         }
-        .wrapper { width: 100%; max-width: 1000px; }
+        .wrapper { width: 100%; max-width: 1100px; }
         .header-section {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 25px;
-            border-bottom: 3px solid #2d7a43;
+            border-bottom: 3px solid var(--header-border);
             padding-bottom: 15px;
         }
-        h1 { color: #2d7a43; font-size: 26px; }
+        h1 { color: var(--title-color); font-size: 26px; }
         .btn-box { display: flex; gap: 10px; }
         .btn {
             padding: 10px 18px; font-weight: 600; border-radius: 4px; cursor: pointer; border: none; font-size: 14px;
         }
         .pdf-btn { background-color: #2d7a43; color: white; }
+        .theme-btn { background-color: #2b5cb8; color: white; }
         .wipe-btn { background: transparent; border: 1px solid #ca3c3c; color: #ca3c3c; }
         .wipe-btn:hover { background: #ca3c3c; color: #fff; }
+        .dl-row-btn { background-color: #1b4b29; color: white; padding: 4px 8px; font-size: 11px; border: none; border-radius: 3px; cursor: pointer; }
         
-        table { width: 100%; border-collapse: collapse; background: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
-        th, td { border: 1px solid #dce4df; padding: 12px 14px; text-align: left; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; background: var(--table-bg); box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        th, td { border: 1px solid var(--table-border); padding: 12px 14px; text-align: left; font-size: 14px; }
         th { background-color: #2d7a43; color: #ffffff; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-        tr:nth-child(even) { background-color: #f7faf8; }
+        tr:nth-child(even) { background-color: var(--table-row-even); }
         
-        .txt-correct { color: #2d7a43; font-weight: 700; } /* Green */
-        .txt-wrong { color: #ca3c3c; font-weight: 700; }   /* Red */
-        .txt-none { color: #2b5cb8; font-weight: 700; }    /* Blue */
+        .txt-correct { color: #2d7a43; font-weight: 700; }
+        .txt-wrong { color: #ca3c3c; font-weight: 700; }
+        .txt-none { color: #2b5cb8; font-weight: 700; }
         
-        .score-total { font-weight: 800; background-color: #eaf5ed; font-size: 15px; }
+        .score-total { font-weight: 800; background-color: rgba(45, 122, 67, 0.1); font-size: 15px; }
         .empty { text-align: center; color: #728276; font-style: italic; padding: 40px; }
+        
+        .server-logs { margin-top: 30px; background: #000; color: #00ff00; font-family: monospace; padding: 15px; border-radius: 6px; width: 100%; max-height: 15px0px; overflow-y: auto; font-size: 12px; box-shadow: inset 0 0 10px #003300; }
     </style>
 </head>
 <body>
 
     <div class="wrapper">
         <div class="header-section">
-            <h1>Competition Master Spreadsheet</h1>
+            <h1>Competition Master Dashboard (Server Terminal)</h1>
             <div class="btn-box">
-                <button class="btn pdf-btn" onclick="generateLeaderboardPDF()">Export Leaderboard PDF</button>
+                <button class="btn theme-btn" onclick="toggleTheme()">Toggle Theme</button>
+                <button class="btn pdf-btn" onclick="generateLeaderboardPDF()">Export Full Grid PDF</button>
                 <button class="btn wipe-btn" onclick="wipeCloudData()">Reset System Server</button>
             </div>
         </div>
@@ -62,12 +86,14 @@
         <table>
             <thead>
                 <tr>
-                    <th rowspan="2" style="width: 7%; text-align: center;">Rank</th>
-                    <th rowspan="2" style="width: 25%;">Registered Profile Title</th>
+                    <th rowspan="2" style="width: 5%; text-align: center;">Rank</th>
+                    <th rowspan="2" style="width: 20%;">Registered Profile Title</th>
+                    <th rowspan="2" style="width: 15%;">Scorer Account</th>
                     <th colspan="3" style="text-align: center; background-color: #246336;">Easy Sector</th>
                     <th colspan="3" style="text-align: center; background-color: #1b4b29;">Average Sector</th>
                     <th colspan="3" style="text-align: center; background-color: #12331c;">Difficult Sector</th>
-                    <th rowspan="2" style="width: 14%; text-align: center;">Total Points</th>
+                    <th rowspan="2" style="width: 10%; text-align: center;">Total Points</th>
+                    <th rowspan="2" style="width: 8%; text-align: center;">Action</th>
                 </tr>
                 <tr>
                     <th style="font-size: 10px; text-align: center;">C</th>
@@ -82,14 +108,27 @@
                 </tr>
             </thead>
             <tbody id="gridBody">
-                <tr><td colspan="12" class="empty">Establishing automated polling tracking data channels...</td></tr>
+                <tr><td colspan="14" class="empty">Establishing automated polling tracking data channels...</td></tr>
             </tbody>
         </table>
+
+        <div class="server-logs" id="logBox">[SYSTEM INFO] Server running on distributed cluster cluster-01... Logging pipeline initiated.</div>
     </div>
 
     <script>
         const DATABASE_URL = "https://lomhji-default-rtdb.asia-southeast1.firebasedatabase.app";
         let globalCachedTeamsList = [];
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+            writeLog("[THEME] Layout display mode toggled manually.");
+        }
+
+        function writeLog(msg) {
+            const lb = document.getElementById("logBox");
+            lb.innerHTML += `<br>[${new Date().toLocaleTimeString()}] ${msg}`;
+            lb.scrollTop = lb.scrollHeight;
+        }
 
         async function fetchCloudUpdates() {
             try {
@@ -104,68 +143,95 @@
             
             if (!dataObject || Object.keys(dataObject).length === 0) {
                 globalCachedTeamsList = [];
-                tbody.innerHTML = `<tr><td colspan="12" class="empty">No live profile modules actively tracked in server registries.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="14" class="empty">No live profile modules actively tracked in server registries.</td></tr>`;
                 return;
             }
 
-            // Map structural objects out to data tracking loops
             globalCachedTeamsList = Object.keys(dataObject).map(key => ({
                 ...dataObject[key]
             }));
 
-            // Excel Rank Calculation sorting logic structure
             globalCachedTeamsList.sort((a, b) => (b.totalScore || 0) - (a.totalScore || 0));
 
             tbody.innerHTML = globalCachedTeamsList.map((team, index) => `
                 <tr>
                     <td style="text-align: center;"><strong>#${index + 1}</strong></td>
                     <td><strong>${team.teamName}</strong></td>
+                    <td><span style="font-size:12px; opacity:0.8;">${team.scorerName || 'N/A'}</span></td>
                     
-                    <td style="text-align: center;" class="txt-correct">${team.breakdown.easy.c}</td>
-                    <td style="text-align: center;" class="txt-wrong">${team.breakdown.easy.w}</td>
-                    <td style="text-align: center;" class="txt-none">${team.breakdown.easy.n}</td>
+                    <td style="text-align: center;" class="txt-correct">${team.breakdown?.easy?.c ?? 0}</td>
+                    <td style="text-align: center;" class="txt-wrong">${team.breakdown?.easy?.w ?? 0}</td>
+                    <td style="text-align: center;" class="txt-none">${team.breakdown?.easy?.n ?? 0}</td>
                     
-                    <td style="text-align: center;" class="txt-correct">${team.breakdown.average.c}</td>
-                    <td style="text-align: center;" class="txt-wrong">${team.breakdown.average.w}</td>
-                    <td style="text-align: center;" class="txt-none">${team.breakdown.average.n}</td>
+                    <td style="text-align: center;" class="txt-correct">${team.breakdown?.average?.c ?? 0}</td>
+                    <td style="text-align: center;" class="txt-wrong">${team.breakdown?.average?.w ?? 0}</td>
+                    <td style="text-align: center;" class="txt-none">${team.breakdown?.average?.n ?? 0}</td>
                     
-                    <td style="text-align: center;" class="txt-correct">${team.breakdown.difficult.c}</td>
-                    <td style="text-align: center;" class="txt-wrong">${team.breakdown.difficult.w}</td>
-                    <td style="text-align: center;" class="txt-none">${team.breakdown.difficult.n}</td>
+                    <td style="text-align: center;" class="txt-correct">${team.breakdown?.difficult?.c ?? 0}</td>
+                    <td style="text-align: center;" class="txt-wrong">${team.breakdown?.difficult?.w ?? 0}</td>
+                    <td style="text-align: center;" class="txt-none">${team.breakdown?.difficult?.n ?? 0}</td>
                     
-                    <td style="text-align: center;" class="score-total">${team.totalScore} pts</td>
+                    <td style="text-align: center;" class="score-total">${team.totalScore || 0} pts</td>
+                    <td style="text-align: center;"><button class="dl-row-btn" onclick="downloadTeamPDF(${index})">Get Report</button></td>
                 </tr>
             `).join('');
         }
 
         async function wipeCloudData() {
-            if(confirm("CRITICAL ACTIONS: Erase all remote server standings profiles permanently?")) {
-                await fetch(`${DATABASE_URL}/competition_teams.json`, { method: 'DELETE' });
-                fetchCloudUpdates();
+            writeLog("[WARNING] Reset requested by supervisor.");
+            if(confirm("Are you sure you want to reset the system server?")) {
+                if(confirm("Are you REALLY sure? This will wipe all remote team scoring records permanent!")) {
+                    await fetch(`${DATABASE_URL}/competition_teams.json`, { method: 'DELETE' });
+                    writeLog("[CRITICAL] Database node completely purged.");
+                    fetchCloudUpdates();
+                } else {
+                    writeLog("[ABORT] Secondary check failed. Reset canceled.");
+                }
+            } else {
+                writeLog("[ABORT] Primary check failed. Reset canceled.");
             }
+        }
+
+        function downloadTeamPDF(index) {
+            const team = globalCachedTeamsList[index];
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(20);
+            doc.text("INDIVIDUAL PERFORMANCE ACCOUNT", 14, 25);
+            doc.line(14, 28, 195, 28);
+            
+            doc.setFontSize(12);
+            doc.text(`Team Profile Title: ${team.teamName}`, 14, 40);
+            doc.text(`Scorer Officer Profile: ${team.scorerName || 'N/A'}`, 14, 48);
+            doc.text(`Final Cumulative Yield Score: ${team.totalScore || 0} pts`, 14, 56);
+            
+            doc.save(`Individual_Report_${team.teamName.replace(/\s+/g, '_')}.pdf`);
+            writeLog(`[EXPORT] Processed unique performance sheet for ${team.teamName}`);
         }
 
         function generateLeaderboardPDF() {
             if(globalCachedTeamsList.length === 0) {
-                alert("No active data metrics to generate an export spreadsheet report module!");
+                alert("No active data metrics to export.");
                 return;
             }
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
             doc.setFont("Helvetica", "bold");
-            doc.setFontSize(18);
+            doc.setFontSize(16);
             doc.text("MASTER LEADERBOARD RUNNING SHEET SUMMARY", 14, 20);
             
-            // Build formal corporate table layout matrix
-            const headers = [["Rank", "Team Profile Name", "Easy (C/W/N)", "Average (C/W/N)", "Difficult (C/W/N)", "Total Points"]];
+            const headers = [["Rank", "Team Profile Name", "Scorer Name", "Easy (C/W/N)", "Average (C/W/N)", "Difficult (C/W/N)", "Total Points"]];
             const bodyData = globalCachedTeamsList.map((team, idx) => [
                 `#${idx + 1}`,
                 team.teamName,
-                `${team.breakdown.easy.c} / ${team.breakdown.easy.w} / ${team.breakdown.easy.n}`,
-                `${team.breakdown.average.c} / ${team.breakdown.average.w} / ${team.breakdown.average.n}`,
-                `${team.breakdown.difficult.c} / ${team.breakdown.difficult.w} / ${team.breakdown.difficult.n}`,
-                `${team.totalScore} pts`
+                team.scorerName || 'N/A',
+                `${team.breakdown?.easy?.c ?? 0} / ${team.breakdown?.easy?.w ?? 0} / ${team.breakdown?.easy?.n ?? 0}`,
+                `${team.breakdown?.average?.c ?? 0} / ${team.breakdown?.average?.w ?? 0} / ${team.breakdown?.average?.n ?? 0}`,
+                `${team.breakdown?.difficult?.c ?? 0} / ${team.breakdown?.difficult?.w ?? 0} / ${team.breakdown?.difficult?.n ?? 0}`,
+                `${team.totalScore || 0} pts`
             ]);
 
             doc.autoTable({
@@ -177,9 +243,9 @@
             });
 
             doc.save("Master_Leaderboard_Report.pdf");
+            writeLog("[EXPORT] Downloaded full competitive matrix sheet report.");
         }
 
-        // Initialize automated sync sequence loop triggers
         fetchCloudUpdates();
         setInterval(fetchCloudUpdates, 1000);
     </script>
