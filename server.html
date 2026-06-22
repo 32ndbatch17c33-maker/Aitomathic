@@ -3,95 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Ledger Registry Dashboard</title>
+    <title>AutoMATHic 2027 Scoring Server App</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
-        :root {
-            --primary-blue: #1a365d;
-            --table-bg: #ffffff;
-            --table-border: #cbd5e0;
-            --bg-body: #f7fafc;
-            --text-dark: #2d3748;
-            --row-even: #f7fafc;
-        }
-        .dark-theme {
-            --primary-blue: #90cdf4;
-            --table-bg: #2d3748;
-            --table-border: #4a5568;
-            --bg-body: #1a202c;
-            --text-dark: #e2e8f0;
-            --row-even: #2d3748;
-        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        @keyframes subtleGlow {
+            0% { text-shadow: 0 0 8px rgba(0, 255, 100, 0.3); }
+            50% { text-shadow: 0 0 16px rgba(0, 255, 100, 0.6); }
+            100% { text-shadow: 0 0 8px rgba(0, 255, 100, 0.3); }
+        }
+
         body {
             font-family: "Times New Roman", Times, serif;
-            background-color: var(--bg-body);
-            color: var(--primary-blue);
+            background-color: #0b0f12;
+            color: #00ff64;
             padding: 40px 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            transition: background 0.2s, color 0.2s;
+            background-image: linear-gradient(rgba(0, 255, 100, 0.02) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 255, 100, 0.02) 1px, transparent 1px);
+            background-size: 30px 30px;
         }
-        .wrapper { width: 100%; max-width: 1150px; }
+
+        .wrapper { width: 100%; max-width: 1100px; }
+        
         .header-section {
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
+            gap: 15px;
             margin-bottom: 25px;
-            border-bottom: 2px solid var(--primary-blue);
-            padding-bottom: 15px;
+            border-bottom: 2px solid #00ff64;
+            padding-bottom: 20px;
+            text-align: center;
         }
-        h1 { font-size: 24px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: bold; }
-        .btn-box { display: flex; gap: 8px; }
-        .btn {
-            padding: 8px 16px; font-weight: bold; font-family: "Times New Roman", Times, serif; border-radius: 0; cursor: pointer; font-size: 13px; text-transform: uppercase;
+        
+        h1 { 
+            font-size: 24px; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            animation: subtleGlow 4s infinite ease-in-out;
+            color: #00ff64;
         }
-        .pdf-btn { background-color: #1a365d; color: white; border: 1px solid #1a365d; }
-        .theme-btn { background: transparent; border: 1px solid var(--primary-blue); color: var(--primary-blue); }
-        .wipe-btn { background: transparent; border: 1px solid #9b2c2c; color: #9b2c2c; }
-        .wipe-btn:hover { background: #9b2c2c; color: #fff; }
-        .action-dl { background: transparent; border: 1px solid var(--primary-blue); color: var(--primary-blue); font-family: "Times New Roman", Times, serif; padding: 3px 8px; font-size: 12px; cursor: pointer; }
-        .action-dl:hover { background-color: rgba(26, 54, 93, 0.05); }
 
-        table { width: 100%; border-collapse: collapse; background: var(--table-bg); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        th, td { border: 1px solid var(--table-border); padding: 10px 12px; text-align: left; font-size: 14px; color: var(--text-dark); }
-        th { background-color: #1a365d; color: #ffffff; font-size: 12px; text-transform: uppercase; font-weight: bold; text-align: center; border: 1px solid #1a365d; }
-        tr:nth-child(even) { background-color: var(--row-even); }
+        /* Celestial Space Backdrop Header Box */
+        .server-cosmic-banner {
+            width: 100%;
+            height: 140px;
+            background-color: #050709;
+            background-image: url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?auto=format&fit=crop&w=1000&q=80');
+            background-size: cover;
+            background-position: center;
+            border: 1px solid #00ff64;
+            margin-bottom: 5px;
+            position: relative;
+        }
+
+        .server-cosmic-banner::after {
+            content: "CENTRAL ENGINE PULSE: ACTIVE";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 11px;
+            letter-spacing: 1px;
+            background: #0b0f12;
+            padding: 3px 8px;
+            border: 1px solid #00ff64;
+        }
+
+        .btn-box { display: flex; gap: 10px; width: 100%; justify-content: flex-end; margin-top: 10px; }
+        .btn {
+            padding: 8px 18px; 
+            font-family: "Times New Roman", Times, serif;
+            font-weight: bold; 
+            cursor: pointer; 
+            font-size: 13px;
+            text-transform: uppercase;
+            border: 1px solid #00ff64;
+            background: transparent;
+            color: #00ff64;
+            transition: all 0.2s;
+        }
+        .pdf-btn { background-color: #00ff64; color: #000000; }
+        .pdf-btn:hover { background: transparent; color: #00ff64; }
+        .wipe-btn:hover { background: #ff3333; color: #ffffff; border-color: #ff3333; }
         
-        .txt-correct { color: #1a365d; font-weight: bold; }
-        .txt-wrong { color: #9b2c2c; font-weight: bold; }
-        .txt-none { color: #2b6cb0; font-weight: bold; }
-        .score-total { font-weight: bold; background-color: rgba(26, 54, 93, 0.05); text-align: center; }
-        .empty { text-align: center; font-style: italic; padding: 40px; color: var(--text-dark); }
+        .action-dl {
+            background: transparent;
+            border: 1px solid #00ff64;
+            color: #00ff64;
+            padding: 2px 8px;
+            cursor: pointer;
+            font-family: "Times New Roman", Times, serif;
+        }
+        .action-dl:hover { background: #00ff64; color: #000000; }
+
+        table { width: 100%; border-collapse: collapse; background: #11161b; border: 1px solid #00ff64; }
+        th, td { border: 1px solid rgba(0, 255, 100, 0.25); padding: 12px 14px; text-align: left; font-size: 14px; }
+        th { background-color: #161f24; color: #00ff64; font-size: 12px; text-transform: uppercase; text-align: center; font-weight: bold; }
+        tr:nth-child(even) { background-color: #141a21; }
         
-        .terminal-logs { margin-top: 25px; background: #ffffff; border: 1px solid var(--table-border); color: #2d3748; font-family: "Times New Roman", Times, serif; padding: 12px; width: 100%; max-height: 120px; overflow-y: auto; font-size: 13px; font-style: italic; }
+        .txt-correct { color: #00ff64; font-weight: bold; }
+        .txt-wrong { color: #ff3333; font-weight: bold; }
+        .txt-none { color: #33a6ff; font-weight: bold; }
+        
+        .score-total { font-weight: bold; background-color: rgba(0, 255, 100, 0.05); text-align: center; }
+        .empty { text-align: center; font-style: italic; padding: 40px; color: rgba(0, 255, 100, 0.5); }
     </style>
 </head>
 <body>
 
     <div class="wrapper">
         <div class="header-section">
-            <h1>Competition Master Standings Ledger</h1>
+            <h1>Welcome to AutoMATHic 2027 Scoring Server App<br><span style="font-size: 14px; opacity: 0.7;">Powered by APPerin</span></h1>
+            
+            <div class="server-cosmic-banner"></div>
+            
             <div class="btn-box">
-                <button class="btn theme-btn" onclick="toggleTheme()">Toggle Theme</button>
                 <button class="btn pdf-btn" onclick="generateLeaderboardPDF()">Export Ledger Grid PDF</button>
-                <button class="btn wipe-btn" onclick="wipeCloudData()">Reset Ledger Matrix</button>
+                <button class="btn wipe-btn" onclick="wipeCloudData()">Reset System Server</button>
             </div>
         </div>
 
         <table>
             <thead>
                 <tr>
-                    <th rowspan="2" style="width: 5%;">Rank</th>
-                    <th rowspan="2" style="width: 22%; text-align: left;">Registered Institutional Profile Title</th>
+                    <th rowspan="2" style="width: 6%;">Rank</th>
+                    <th rowspan="2" style="width: 25%; text-align: left;">Registered Institutional Profile Title</th>
                     <th rowspan="2" style="width: 15%; text-align: left;">Assigned Scorer</th>
-                    <th colspan="3" style="background-color: #1a365d;">Easy Sector</th>
-                    <th colspan="3" style="background-color: #132846;">Average Sector</th>
-                    <th colspan="3" style="background-color: #0c1a2e;">Difficult Sector</th>
+                    <th colspan="3">Easy Sector</th>
+                    <th colspan="3">Average Sector</th>
+                    <th colspan="3">Difficult Sector</th>
                     <th rowspan="2" style="width: 10%;">Total Mark</th>
-                    <th rowspan="2" style="width: 10%;">Report Card</th>
+                    <th rowspan="2" style="width: 10%;">Transcript</th>
                 </tr>
                 <tr>
                     <th>C</th><th>W</th><th>N</th>
@@ -103,31 +150,18 @@
                 <tr><td colspan="14" class="empty">Establishing automated polling tracking data channels...</td></tr>
             </tbody>
         </table>
-
-        <div class="terminal-logs" id="logBox">System Log: Pipeline initiated. Diagnostics normal.</div>
     </div>
 
     <script>
         const DATABASE_URL = "https://lomhji-default-rtdb.asia-southeast1.firebasedatabase.app";
         let globalCachedTeamsList = [];
 
-        function toggleTheme() {
-            document.body.classList.toggle('dark-theme');
-            writeLog("Interface color scheme shifted.");
-        }
-
-        function writeLog(msg) {
-            const lb = document.getElementById("logBox");
-            lb.innerHTML += `<br>[${new Date().toLocaleTimeString()}] ${msg}`;
-            lb.scrollTop = lb.scrollHeight;
-        }
-
         async function fetchCloudUpdates() {
             try {
                 const response = await fetch(`${DATABASE_URL}/competition_teams.json`);
                 const dataObject = await response.json();
                 renderDashboard(dataObject);
-            } catch (error) { console.error("Polling error: ", error); }
+            } catch (error) { console.error("Sync exception: ", error); }
         }
 
         function renderDashboard(dataObject) {
@@ -161,19 +195,16 @@
                     <td style="text-align: center;" class="txt-none">${team.breakdown?.difficult?.n ?? 0}</td>
                     
                     <td class="score-total">${team.totalScore || 0} pts</td>
-                    <td style="text-align: center;"><button class="action-dl" onclick="downloadTeamPDF(${index})">Download</button></td>
+                    <td style="text-align: center;"><button class="action-dl" onclick="downloadTeamPDF(${index})">Print</button></td>
                 </tr>
             `).join('');
         }
 
         async function wipeCloudData() {
-            if(confirm("Are you sure you want to reset the system server ledger matrix?")) {
-                if(confirm("Are you REALLY sure? This operational choice will permanently erase all active records!")) {
-                    await fetch(`${DATABASE_URL}/competition_teams.json`, { method: 'DELETE' });
-                    writeLog("Critical: Standings database registry completely wiped.");
-                    fetchCloudUpdates();
-                } else { writeLog("Wipe aborted at secondary confirmation gate."); }
-            } else { writeLog("Wipe aborted at initial gate."); }
+            if(confirm("Erase all remote server standings profiles permanently?")) {
+                await fetch(`${DATABASE_URL}/competition_teams.json`, { method: 'DELETE' });
+                fetchCloudUpdates();
+            }
         }
 
         function downloadTeamPDF(index) {
@@ -182,53 +213,47 @@
             const doc = new jsPDF();
             
             doc.setFont("times", "bold");
-            doc.setFontSize(22);
-            doc.setTextColor(26, 54, 93);
-            doc.text("OFFICIAL SCORE REPORT CARD", 14, 25);
-            doc.setDrawColor(26, 54, 93);
-            doc.line(14, 28, 196, 28);
+            doc.setFontSize(18);
+            doc.setTextColor(0, 0, 0);
+            doc.text("AUTOMATHIC 2027 INDIVIDUAL PERFORMANCE SUMMARY", 14, 20);
             
-            doc.setFontSize(11);
+            doc.setDrawColor(0, 0, 0);
+            doc.setLineWidth(0.5);
+            doc.line(14, 24, 196, 24);
+
             doc.setFont("times", "normal");
-            doc.setTextColor(50, 50, 50);
-            doc.text(`Institutional Unit Profile: ${team.teamName}`, 14, 40);
-            doc.text(`Assigned Evaluation Examiner: ${team.scorerName || 'N/A'}`, 14, 47);
-            doc.text(`Calculated Aggregate Value Score: ${team.totalScore || 0} Points`, 14, 54);
-            
-            const tableHeaders = [["Sector Tier Category", "Item Parameter Index", "Resolution Evaluation Status"]];
+            doc.setFontSize(11);
+            doc.text(`Registered Profile Title: ${team.teamName}`, 14, 34);
+            doc.text(`Evaluation Officer: ${team.scorerName || 'N/A'}`, 14, 41);
+            doc.text(`Total Final Grade Value: ${team.totalScore || 0} pts`, 14, 48);
+
+            const tableHeaders = [["Sector Tier Category", "Evaluation Item Parameter", "Resolution State Status"]];
             const matrixRows = [];
             
             ["easy", "average", "difficult"].forEach(tier => {
                 for(let i = 1; i <= 5; i++) {
                     const rawVal = team.matrix?.[tier]?.[`item${i}`] || "unscored";
-                    let stateDisplay = "NOT EVALUATED / UNGRADED";
+                    let stateDisplay = "NOT EVALUATED";
                     if(rawVal === "correct") stateDisplay = "PASSED / CORRECT";
                     if(rawVal === "wrong") stateDisplay = "FAILED / INCORRECT";
                     if(rawVal === "unanswered") stateDisplay = "OMITTED / NO ANSWER";
                     
-                    matrixRows.push([tier.toUpperCase(), `Item Evaluation Item 0${i}`, stateDisplay]);
+                    matrixRows.push([tier.toUpperCase(), `Item 0${i}`, stateDisplay]);
                 }
             });
-            
+
             doc.autoTable({
                 head: tableHeaders,
                 body: matrixRows,
-                startY: 64,
-                theme: 'grid',
-                headStyles: { fillColor: [26, 54, 93], fontStyle: 'bold', fontFamily: 'times' },
-                bodyStyles: { fontFamily: 'times', textColor: [40, 40, 40] },
-                columnStyles: { 0: { fontStyle: 'bold' }, 2: { fontStyle: 'bold' } },
-                didParseCell: function(data) {
-                    if (data.column.index === 2) {
-                        if (data.cell.text[0].includes("CORRECT")) data.cell.styles.textColor = [26, 54, 93];
-                        if (data.cell.text[0].includes("INCORRECT")) data.cell.styles.textColor = [155, 44, 44];
-                        if (data.cell.text[0].includes("NO ANSWER")) data.cell.styles.textColor = [43, 108, 176];
-                    }
-                }
+                startY: 56,
+                theme: 'plain',
+                headStyles: { textColor: [0, 0, 0], fontStyle: 'bold', fontFamily: 'times', fontSize: 11 },
+                bodyStyles: { fontFamily: 'times', textColor: [0, 0, 0], fontSize: 10 },
+                columnStyles: { 0: { fontStyle: 'bold', width: 50 }, 1: { width: 50 } },
+                styles: { borderBottomWidth: 0.5, borderBottomColor: [180, 180, 180] }
             });
-            
-            doc.save(`Score_Report_${team.teamName.replace(/\s+/g, '_')}.pdf`);
-            writeLog(`Generated structural transcript report card for ${team.teamName}`);
+
+            doc.save(`Performance_Report_${team.teamName.replace(/\s+/g, '_')}.pdf`);
         }
 
         function generateLeaderboardPDF() {
@@ -238,17 +263,12 @@
             
             doc.setFont("times", "bold");
             doc.setFontSize(14);
-            doc.setTextColor(26, 54, 93);
-            // Title matching exact specifications
-            doc.text("MASTER INSTITUTIONAL STANDINGS SCORE LEDGER", 14, 20);
+            doc.setTextColor(0, 0, 0);
+            doc.text("MASTER INSTITUTIONAL STANDINGS SCORE LEDGER [cite: 1]", 14, 20);
             
-            // Clean table matching your required spacing layouts exactly
-            const headers = [["Rank", "Institutional Title Profile", "Evaluator Officer", "Easy", "Average", "Difficult", "Total Final Mark"]];
-            
+            const headers = [["Rank", "Institutional Title Profile [cite: 2]", "Evaluator Officer [cite: 2]", "Easy [cite: 2]", "Average [cite: 2]", "Difficult [cite: 2]", "Total Final Mark [cite: 2]"]];
             const bodyData = globalCachedTeamsList.map((team, idx) => [
-                `#${idx + 1}`, 
-                team.teamName, 
-                team.scorerName || 'N/A',
+                `#${idx + 1}`, team.teamName, team.scorerName || 'N/A',
                 `${team.breakdown?.easy?.c ?? 0}/${team.breakdown?.easy?.w ?? 0}/${team.breakdown?.easy?.n ?? 0}`,
                 `${team.breakdown?.average?.c ?? 0}/${team.breakdown?.average?.w ?? 0}/${team.breakdown?.average?.n ?? 0}`,
                 `${team.breakdown?.difficult?.c ?? 0}/${team.breakdown?.difficult?.w ?? 0}/${team.breakdown?.difficult?.n ?? 0}`,
@@ -259,20 +279,9 @@
                 head: headers,
                 body: bodyData,
                 startY: 26,
-                theme: 'plain', // Minimalist clean look
-                headStyles: { 
-                    textColor: [26, 54, 93], 
-                    fontStyle: 'bold', 
-                    fontFamily: 'times',
-                    fontSize: 10,
-                    cellPadding: 3
-                },
-                bodyStyles: { 
-                    fontFamily: 'times', 
-                    textColor: [0, 0, 0],
-                    fontSize: 10,
-                    cellPadding: 4
-                },
+                theme: 'plain',
+                headStyles: { textColor: [0, 0, 0], fontStyle: 'bold', fontFamily: 'times', fontSize: 10, cellPadding: 3 },
+                bodyStyles: { fontFamily: 'times', textColor: [0, 0, 0], fontSize: 10, cellPadding: 4 },
                 columnStyles: {
                     0: { width: 12, fontStyle: 'bold' },
                     1: { width: 75 },
@@ -282,15 +291,10 @@
                     5: { width: 22, halign: 'center' },
                     6: { width: 25, halign: 'right', fontStyle: 'bold' }
                 },
-                drawHorizontalLine: (link, opts) => true,
-                styles: {
-                    borderBottomWidth: 0.5,
-                    borderBottomColor: [200, 200, 200]
-                }
+                styles: { borderBottomWidth: 0.5, borderBottomColor: [200, 200, 200] }
             });
 
             doc.save("Master_Standings_Ledger.pdf");
-            writeLog("Exported full corporate ledger standings chart file.");
         }
 
         fetchCloudUpdates();
