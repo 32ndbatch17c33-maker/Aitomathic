@@ -1,110 +1,400 @@
-function downloadTeamPDF(index) {
-    const team = globalCachedTeamsList[index];
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    
-    // --- Document Header ---
-    doc.setFillColor(30, 41, 34); // Slate Accent
-    doc.rect(0, 0, 210, 40, 'F');
-    
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(22);
-    doc.setTextColor(255, 255, 255);
-    doc.text("COMPETITION METRIC SCORE REPORT", 14, 26);
-    
-    // --- Metadata Information Panel ---
-    doc.setFontSize(10);
-    doc.setFont("Helvetica", "normal");
-    doc.setTextColor(80, 90, 85);
-    
-    doc.text("Profile Summary Identification", 14, 52);
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(14);
-    doc.setTextColor(30, 41, 34);
-    doc.text(`${team.teamName}`, 14, 59);
-    
-    doc.setFont("Helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(80, 90, 85);
-    doc.text("Assigned Scorer Officer", 110, 52);
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(13);
-    doc.setTextColor(30, 41, 34);
-    doc.text(`${team.scorerName || 'N/A'}`, 110, 59);
-    
-    // Divider
-    doc.setDrawColor(210, 215, 212);
-    doc.line(14, 66, 196, 66);
-    
-    // --- Aggregate Yield Metrics ---
-    doc.setFont("Helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(80, 90, 85);
-    doc.text("Aggregated Standing Performance Yield Score", 14, 76);
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(20);
-    doc.setTextColor(45, 122, 67); // Green branding
-    doc.text(`${team.totalScore || 0} Points`, 14, 86);
-    
-    // --- Itemized Performance Resolution Grid ---
-    doc.setFontSize(12);
-    doc.setTextColor(30, 41, 34);
-    doc.text("Comprehensive Item Matrix Verification Status", 14, 102);
-    
-    // Format individual item structures out cleanly to printable table sets
-    const tableHeaders = [["Sector Tier", "Item Identification", "Resolution State Status"]];
-    const matrixRows = [];
-    
-    const tiers = ["easy", "average", "difficult"];
-    tiers.forEach(tier => {
-        for(let i = 1; i <= 5; i++) {
-            const rawVal = team.matrix?.[tier]?.[`item${i}`] || "unscored";
-            let stateDisplay = "Not Scored Yet";
-            
-            if(rawVal === "correct") stateDisplay = "✔ CORRECT";
-            if(rawVal === "wrong") stateDisplay = "✘ WRONG";
-            if(rawVal === "unanswered") stateDisplay = "⦾ NO ANSWER";
-            
-            matrixRows.push([
-                tier.toUpperCase(),
-                `Item 0${i}`,
-                stateDisplay
-            ]);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Evaluation & Scoring Ledger</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --primary-blue: #1a365d;
+            --secondary-blue: #2b6cb0;
+            --bg-body: #f7fafc;
+            --bg-container: #ffffff;
+            --border-color: #cbd5e0;
+            --text-dark: #2d3748;
         }
-    });
-    
-    doc.autoTable({
-        head: tableHeaders,
-        body: matrixRows,
-        startY: 108,
-        theme: 'grid',
-        headStyles: { fillColor: [45, 122, 67], fontStyle: 'bold' },
-        columnStyles: {
-            0: { fontStyle: 'bold', width: 45 },
-            1: { width: 45 },
-            2: { fontStyle: 'bold' }
-        },
-        didParseCell: function(data) {
-            // Apply corporate text-coloring variants depending on data outputs
-            if (data.column.index === 2) {
-                if (data.cell.text[0].includes("CORRECT")) {
-                    data.cell.styles.textColor = [45, 122, 67];
-                } else if (data.cell.text[0].includes("WRONG")) {
-                    data.cell.styles.textColor = [202, 60, 60];
-                } else if (data.cell.text[0].includes("NO ANSWER")) {
-                    data.cell.styles.textColor = [43, 92, 184];
+        .dark-theme {
+            --primary-blue: #90cdf4;
+            --secondary-blue: #63b3ed;
+            --bg-body: #1a202c;
+            --bg-container: #2d3748;
+            --border-color: #4a5568;
+            --text-dark: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: "Times New Roman", Times, serif;
+            background-color: var(--bg-body);
+            color: var(--primary-blue);
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background 0.2s, color 0.2s;
+        }
+        .theme-toggle {
+            align-self: flex-end;
+            width: 100%;
+            max-width: 750px;
+            margin-bottom: 15px;
+            text-align: right;
+        }
+        .theme-toggle button {
+            background: none;
+            border: 1px solid var(--primary-blue);
+            color: var(--primary-blue);
+            font-family: "Times New Roman", Times, serif;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .ledger-container {
+            width: 100%;
+            max-width: 750px;
+            background: var(--bg-container);
+            border: 2px solid var(--primary-blue);
+            padding: 35px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        h2 {
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .subtitle {
+            text-align: center;
+            font-style: italic;
+            margin-bottom: 25px;
+            color: var(--text-dark);
+            font-size: 14px;
+        }
+        .identity-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        .identity-table td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            color: var(--text-dark);
+        }
+        .identity-table td.label {
+            font-weight: bold;
+            color: var(--primary-blue);
+            width: 25%;
+            background-color: rgba(26, 54, 93, 0.03);
+            text-transform: uppercase;
+            font-size: 13px;
+        }
+        .identity-table input[type="text"] {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 16px;
+            color: var(--primary-blue);
+            outline: none;
+        }
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+        .report-table th {
+            background-color: var(--primary-blue);
+            color: #ffffff;
+            padding: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 13px;
+            border: 1px solid var(--primary-blue);
+        }
+        .report-table td {
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            color: var(--text-dark);
+            vertical-align: middle;
+        }
+        .tier-row-header {
+            background-color: rgba(26, 54, 93, 0.05);
+            font-weight: bold;
+            color: var(--primary-blue);
+            font-size: 14px;
+        }
+        .item-label {
+            font-weight: bold;
+            text-align: center;
+            width: 15%;
+        }
+        .status-cell {
+            width: 10%;
+            text-align: center;
+        }
+        .status-circle {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background-color: #24b353;
+            display: inline-block;
+        }
+        .btn-group {
+            display: flex;
+            gap: 5px;
+            justify-content: flex-end;
+        }
+        .action-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-dark);
+            font-family: "Times New Roman", Times, serif;
+            padding: 4px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .action-btn:hover {
+            background-color: rgba(26, 54, 93, 0.05);
+        }
+        .action-btn.btn-correct.active { background-color: #1a365d !important; color: #ffffff !important; border-color: #1a365d; font-weight: bold; }
+        .action-btn.btn-wrong.active { background-color: #9b2c2c !important; color: #ffffff !important; border-color: #9b2c2c; font-weight: bold; }
+        .action-btn.btn-none.active { background-color: #2b6cb0 !important; color: #ffffff !important; border-color: #2b6cb0; font-weight: bold; }
+
+        .submit-box {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .print-btn {
+            background-color: var(--primary-blue);
+            color: white;
+            border: 1px solid var(--primary-blue);
+            font-family: "Times New Roman", Times, serif;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 12px 35px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .print-btn:hover {
+            opacity: 0.9;
+        }
+        .pipeline-status {
+            text-align: center;
+            font-size: 12px;
+            margin-top: 15px;
+            font-style: italic;
+            color: var(--text-dark);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="theme-toggle">
+        <button onclick="toggleTheme()">Toggle Bright / Dark Layout</button>
+    </div>
+
+    <div class="ledger-container">
+        <h2>Official Evaluation Grade Report</h2>
+        <div class="subtitle">Scoring Input Matrix Terminal Module</div>
+        
+        <table class="identity-table">
+            <tr>
+                <td class="label">Target Team Title</td>
+                <td><input type="text" id="teamNameInput" placeholder="Click here to input team identity profile..." onchange="updateTeamIdentity()"></td>
+            </tr>
+            <tr>
+                <td class="label">Scorer Examiner</td>
+                <td><input type="text" id="scorerNameInput" placeholder="Click here to specify examiner name..." onchange="pushStateToCloud()"></td>
+            </tr>
+        </table>
+
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>Item ID</th>
+                    <th style="text-align: center;">Status</th>
+                    <th style="text-align: right; padding-right: 25px;">Grade Evaluation Input Actions</th>
+                </tr>
+            </thead>
+            <tbody id="evaluationMatrixBody">
+                <!-- Programmatically generated structured rows -->
+            </tbody>
+        </table>
+
+        <div class="submit-box">
+            <button class="print-btn" onclick="generateReportPDF()">Print Grade Summary PDF</button>
+        </div>
+        <div class="pipeline-status">System Pipeline Synced & Online.</div>
+    </div>
+
+    <script>
+        const DATABASE_URL = "https://lomhji-default-rtdb.asia-southeast1.firebasedatabase.app";
+        let activeTeam = "";
+        
+        let currentRecord = {
+            easy: { item1: "unscored", item2: "unscored", item3: "unscored", item4: "unscored", item5: "unscored" },
+            average: { item1: "unscored", item2: "unscored", item3: "unscored", item4: "unscored", item5: "unscored" },
+            difficult: { item1: "unscored", item2: "unscored", item3: "unscored", item4: "unscored", item5: "unscored" }
+        };
+
+        const pointSchema = {
+            easy: { correct: 2, wrong: -2, unanswered: 0, unscored: 0 },
+            average: { correct: 10, wrong: -5, unanswered: -2, unscored: 0 },
+            difficult: { correct: 25, wrong: -10, unanswered: -5, unscored: 0 }
+        };
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+        }
+
+        function initMatrixGrid() {
+            const tbody = document.getElementById("evaluationMatrixBody");
+            let html = "";
+            
+            const sections = [
+                { key: "easy", name: "EASY SECTOR TIERS (+2 / -2 / 0)" },
+                { key: "average", name: "AVERAGE SECTOR TIERS (+10 / -5 / -2)" },
+                { key: "difficult", name: "DIFFICULT SECTOR TIERS (+25 / -10 / -5)" }
+            ];
+
+            sections.forEach(sec => {
+                html += `<tr><td colspan="3" class="tier-row-header">${sec.name}</td></tr>`;
+                for(let i = 1; i <= 5; i++) {
+                    html += `
+                        <tr>
+                            <td class="item-label">Item 0${i}</td>
+                            <td class="status-cell">
+                                <span class="status-circle" id="ind-${sec.key}-item${i}"></span>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <button class="action-btn btn-correct" id="${sec.key}-i${i}-correct" onclick="selectState('${sec.key}', 'item${i}', 'correct')">Correct</button>
+                                    <button class="action-btn btn-wrong" id="${sec.key}-i${i}-wrong" onclick="selectState('${sec.key}', 'item${i}', 'wrong')">Wrong</button>
+                                    <button class="action-btn btn-none" id="${sec.key}-i${i}-unanswered" onclick="selectState('${sec.key}', 'item${i}', 'unanswered')">No Ans</button>
+                                </div>
+                            </td>
+                        </tr>`;
                 }
-            }
+            });
+            tbody.innerHTML = html;
         }
-    });
-    
-    // --- Footer Authentication Stamps ---
-    const finalY = doc.lastAutoTable.finalY + 15;
-    doc.setFont("Helvetica", "italic");
-    doc.setFontSize(8);
-    doc.setTextColor(130, 135, 132);
-    doc.text(`Report processed automatically via Live Core Ledger Distribution Framework.`, 14, finalY);
-    
-    doc.save(`Performance_Report_${team.teamName.replace(/\s+/g, '_')}.pdf`);
-    writeLog(`[EXPORT] Processed unique performance sheet for ${team.teamName}`);
-}
+
+        async function updateTeamIdentity() {
+            const rawName = document.getElementById("teamNameInput").value.trim();
+            if(!rawName) return;
+            activeTeam = rawName.replace(/[\.#\$\[\]]/g, "-");
+            
+            try {
+                const response = await fetch(`${DATABASE_URL}/competition_teams/${activeTeam}.json`);
+                const existingData = await response.json();
+                if(existingData) {
+                    if(existingData.matrix) currentRecord = existingData.matrix;
+                    if(existingData.scorerName) document.getElementById("scorerNameInput").value = existingData.scorerName;
+                    refreshUI();
+                } else {
+                    currentRecord = {
+                        easy: { item1: "unscored", item2: "unscored", item3: "unscored", item4: "unscored", item5: "unscored" },
+                        average: { item1: "unscored", item2: "unscored", item3: "unscored", item4: "unscored", item5: "unscored" },
+                        difficult: { item1: "unscored", item2: "unscored", item3: "unscored", item4: "unscored", item5: "unscored" }
+                    };
+                    refreshUI();
+                    pushStateToCloud();
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function selectState(tier, itemKey, val) {
+            if(!activeTeam) {
+                alert("Please declare a Target Team Title profile identifier code first.");
+                return;
+            }
+            currentRecord[tier][itemKey] = val;
+            refreshUI();
+            pushStateToCloud();
+        }
+
+        function refreshUI() {
+            ["easy", "average", "difficult"].forEach(tier => {
+                for(let i = 1; i <= 5; i++) {
+                    const itemKey = `item${i}`;
+                    const currentVal = currentRecord[tier][itemKey];
+                    
+                    document.getElementById(`${tier}-i${i}-correct`).classList.remove("active");
+                    document.getElementById(`${tier}-i${i}-wrong`).classList.remove("active");
+                    document.getElementById(`${tier}-i${i}-unanswered`).classList.remove("active");
+
+                    const indicator = document.getElementById(`ind-${tier}-${itemKey}`);
+                    if(currentVal === "unscored") {
+                        indicator.style.display = "inline-block";
+                    } else {
+                        indicator.style.display = "none";
+                        const target = document.getElementById(`${tier}-i${i}-${currentVal}`);
+                        if(target) target.classList.add("active");
+                    }
+                }
+            });
+        }
+
+        function calculateTotals() {
+            let score = 0;
+            let breakdown = { easy: {c:0, w:0, n:0}, average: {c:0, w:0, n:0}, difficult: {c:0, w:0, n:0} };
+
+            ["easy", "average", "difficult"].forEach(tier => {
+                for(let i = 1; i <= 5; i++) {
+                    const val = currentRecord[tier][`item${i}`];
+                    score += pointSchema[tier][val];
+                    if(val === 'correct') breakdown[tier].c++;
+                    if(val === 'wrong') breakdown[tier].w++;
+                    if(val === 'unanswered') breakdown[tier].n++;
+                }
+            });
+            return { total: score, breakdown: breakdown };
+        }
+
+        async function pushStateToCloud() {
+            if(!activeTeam) return;
+            const metrics = calculateTotals();
+            const payload = {
+                teamName: document.getElementById("teamNameInput").value.trim(),
+                scorerName: document.getElementById("scorerNameInput").value.trim() || "N/A",
+                totalScore: metrics.total,
+                breakdown: metrics.breakdown,
+                matrix: currentRecord
+            };
+            await fetch(`${DATABASE_URL}/competition_teams/${activeTeam}.json`, {
+                method: "PUT",
+                body: JSON.stringify(payload)
+            });
+        }
+
+        function generateReportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const name = document.getElementById("teamNameInput").value.trim() || "Unspecified Profile";
+            const scorer = document.getElementById("scorerNameInput").value.trim() || "N/A";
+            const metrics = calculateTotals();
+
+            doc.setFont("times", "bold");
+            doc.setFontSize(20);
+            doc.setTextColor(26, 54, 93);
+            doc.text("COMPETITION EVALUATION REPORT CARD", 14, 25);
+            doc.setDrawColor(26, 54, 93);
+            doc.line(14, 28, 196, 28);
+            
+            doc.setFont("times", "normal");
+            doc.setFontSize(12);
+            doc.setTextColor(40, 40, 40);
+            doc.text(`Team Profile Title: ${name}`, 14, 40);
+            doc.text(`Examiner of Record: ${scorer}`, 14, 48);
+            doc.text(`Final Calculated Grade Score: ${metrics.total} pts`, 14, 56);
+            doc.save(`Report_Card_${name.replace(/\s+/g, '_')}.pdf`);
+        }
+
+        initMatrixGrid();
+    </script>
+</body>
+</html>
