@@ -1,4 +1,4 @@
-const CACHE_NAME = 'scorer-app-v2';
+const CACHE_NAME = 'scorer-app-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -30,11 +30,10 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Let Firebase bypass local caching so scoring matches update instantly
+  // Completely bypass the cache layout for active Firebase updates
   if (event.request.url.includes('firebasedatabase.app')) {
     return;
   }
-
   event.respondWith(
     fetch(event.request).catch(() => {
       return caches.match(event.request);
