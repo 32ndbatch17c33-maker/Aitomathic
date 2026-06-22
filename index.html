@@ -2,8 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>UPCES - Scorer Terminal Portal</title>
+    
+    <!-- PWA & Cross-Platform Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d1117">
+    
+    <!-- iOS / Apple Specific Optimizations -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Scorer App">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
@@ -17,13 +28,29 @@
             --border-light: #e2e8f0;
             --gradient-xm: linear-gradient(135deg, var(--xm-vivid-blue), var(--xm-light-purple));
             
-            /* Specific Requested Active Colors */
+            /* Active Button Overrides */
             --forest-green: #1e4620;
             --deep-dark-red: #7f1d1d;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { background-color: var(--bg-canvas); color: var(--text-dark); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-x: hidden; }
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            -webkit-tap-highlight-color: transparent; /* Prevents ugly grey boxes clicking on iPhone */
+        }
+        
+        body { 
+            background-color: var(--bg-canvas); 
+            color: var(--text-dark); 
+            min-height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 20px; 
+            overflow-x: hidden; 
+        }
 
         /* --- ENTRANCE ANIMATION LAYER --- */
         #entrance-screen {
@@ -47,7 +74,7 @@
             100% { transform: scale(1.35); opacity: 0; filter: blur(12px); }
         }
 
-        /* --- GATEWAY FRAME (Screenshot_2026-06-22-22-08-21-238_com.android.chrome-edit_2.jpg Replica) --- */
+        /* --- GATEWAY FRAME --- */
         #gateway-screen { display: none; width: 100%; max-width: 490px; text-align: center; }
         .qualtrics-card-clone {
             background: var(--card-surface); padding: 50px 45px; border-radius: 8px;
@@ -79,7 +106,7 @@
         .qualtrics-btn-blue:hover { background-color: #005f96; }
         .security-notice-text { font-size: 14px; color: var(--text-muted); text-align: center; line-height: 1.6; margin-top: 25px; padding: 0 10px; }
 
-        /* --- HIGH-FIDELITY DYNAMIC MAIN INTERFACE --- */
+        /* --- HIGH-FIDELITY MAIN INTERFACE --- */
         #main-scoring-panel { 
             display: none; width: 100%; max-width: 800px; background: var(--card-surface); 
             border-radius: 24px; padding: 50px; 
@@ -104,7 +131,6 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
         .meta-pill strong { display: block; color: var(--obsidian); font-size: 18px; margin-top: 4px; font-weight: 700; }
-        .meta-pill span { color: var(--xm-vivid-blue); }
 
         .tier-group-container { margin-bottom: 40px; }
         .tier-group-title { 
@@ -121,6 +147,17 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
+        
+        /* Mobile responsive alignment */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            #main-scoring-panel { padding: 20px; border-radius: 16px; }
+            .scoring-item-card { flex-direction: column; gap: 12px; align-items: flex-start; padding: 16px; }
+            .selector-button-row { width: 100%; justify-content: space-between; }
+            .toggle-choice-btn { flex: 1; text-align: center; padding: 10px 0; }
+            .session-badge-row { flex-direction: column; gap: 10px; }
+        }
+
         .scoring-item-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
@@ -142,7 +179,7 @@
         }
         .toggle-choice-btn:hover { color: var(--text-dark); background: rgba(255,255,255,0.6); }
         
-        /* Specific Target Active State Overrides */
+        /* Color Overrides */
         .toggle-choice-btn.active-correct { 
             background: var(--forest-green) !important; 
             color: #ffffff !important; 
@@ -203,7 +240,7 @@
         </div>
     </div>
 
-    <!-- 3. Main Scoring Dashboard Studio Workspace -->
+    <!-- 3. Main Scoring Dashboard -->
     <div id="main-scoring-panel">
         <div class="welcome-banner">
             <h2>Welcome to the Scorer App Interface</h2>
@@ -255,6 +292,15 @@
             }, 3500);
             assembleMatrixDOMs();
         });
+
+        // PWA Service worker initialization script block
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Cross-platform worker ready.', reg.scope))
+                    .catch(err => console.log('Worker crashed.', err));
+            });
+        }
 
         function assembleMatrixDOMs() {
             populateSectorLayout("easy", document.getElementById("boxEasy"));
@@ -324,12 +370,10 @@
                     const btnWrong = document.getElementById(`${tier}-i${i}-wrong`);
                     const btnUnanswered = document.getElementById(`${tier}-i${i}-unanswered`);
 
-                    // Clean out old selection classes
                     btnCorrect.classList.remove("active-correct");
                     btnWrong.classList.remove("active-wrong");
                     btnUnanswered.classList.remove("active-unanswered");
 
-                    // Inject target contextual layout class
                     if (innerTargetState === "correct") btnCorrect.classList.add("active-correct");
                     if (innerTargetState === "wrong") btnWrong.classList.add("active-wrong");
                     if (innerTargetState === "unanswered") btnUnanswered.classList.add("active-unanswered");
@@ -365,26 +409,4 @@
             };
             await fetch(`${CLOUD_TARGET_URL}/competition_teams/${activeScopeId}.json`, {
                 method: "PUT",
-                body: JSON.stringify(transportPayload)
-            });
-        }
-
-        function triggerPDFDownload() {
-            const { jsPDF } = window.jspdf;
-            const documentReport = new jsPDF();
-            const computed = processCalculatedMetrics();
-            const rawNameString = document.getElementById("teamField").value.trim();
-
-            documentReport.setFont("Helvetica", "bold");
-            documentReport.setFontSize(20);
-            documentReport.text("OFFICIAL COMPETITION TALLY CARD", 20, 25);
-            documentReport.line(20, 28, 190, 28);
-            documentReport.setFontSize(13);
-            documentReport.text("Team Assignment: " + rawNameString, 20, 42);
-            documentReport.text("Logged Scorer Marshal: " + verifiedScorerName, 20, 50);
-            documentReport.text("Aggregated Score Yield: " + computed.accumulatedPoints + " pts", 20, 58);
-            documentReport.save("Score_Tally_" + rawNameString + ".pdf");
-        }
-    </script>
-</body>
-</html>
+                
